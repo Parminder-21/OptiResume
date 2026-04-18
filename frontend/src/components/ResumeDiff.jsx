@@ -66,20 +66,20 @@ function DiffRow({ item, index, isExpanded, onToggle }) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="grid grid-cols-2 gap-px bg-white/5 border-t border-white/5">
+            <div className="grid grid-cols-2 gap-px bg-[var(--border-pri)] border-t border-[var(--border-pri)]">
               {/* Original */}
-              <div className="bg-[#0f1320] px-4 py-3">
-                <p className="text-xs text-red-400 font-semibold uppercase tracking-wider mb-2">Original</p>
+              <div className="bg-[var(--bg-page)] px-4 py-3">
+                <p className="text-xs text-red-500 dark:text-red-400 font-semibold uppercase tracking-wider mb-2">Original</p>
                 <p
-                  className="text-sm text-slate-400 leading-relaxed diff-text"
+                  className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed diff-text"
                   dangerouslySetInnerHTML={{ __html: origHtml }}
                 />
               </div>
               {/* Optimized */}
-              <div className="bg-[#0a1218] px-4 py-3">
-                <p className="text-xs text-green-400 font-semibold uppercase tracking-wider mb-2">Optimized</p>
+              <div className="bg-[var(--bg-surface)] px-4 py-3">
+                <p className="text-xs text-green-600 dark:text-green-400 font-semibold uppercase tracking-wider mb-2">Optimized</p>
                 <p
-                  className="text-sm text-slate-200 leading-relaxed diff-text"
+                  className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed diff-text"
                   dangerouslySetInnerHTML={{ __html: optHtml }}
                 />
               </div>
@@ -195,17 +195,25 @@ export default function ResumeDiff({ diff }) {
       {/* Inline styles for diff highlights */}
       <style>{`
         .diff-text mark.added {
-          background: rgba(34, 197, 94, 0.25);
-          color: #86efac;
+          background: rgba(34, 197, 94, 0.15);
+          color: #16a34a;
           border-radius: 3px;
           padding: 0 2px;
         }
+        .dark .diff-text mark.added {
+          color: #86efac;
+          background: rgba(34, 197, 94, 0.25);
+        }
         .diff-text mark.removed {
-          background: rgba(239, 68, 68, 0.20);
-          color: #fca5a5;
+          background: rgba(239, 68, 68, 0.10);
+          color: #dc2626;
           border-radius: 3px;
           padding: 0 2px;
           text-decoration: line-through;
+        }
+        .dark .diff-text mark.removed {
+          color: #fca5a5;
+          background: rgba(239, 68, 68, 0.20);
         }
       `}</style>
     </div>

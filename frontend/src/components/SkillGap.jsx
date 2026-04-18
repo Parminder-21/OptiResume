@@ -71,7 +71,7 @@ export default function SkillGap({ skillGaps }) {
       </div>
 
       {/* Legend */}
-      <div className="mt-5 pt-4 border-t border-white/10 flex gap-5 text-xs text-slate-500">
+      <div className="mt-5 pt-4 border-t border-[var(--border-pri)] flex gap-5 text-xs text-slate-500">
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-400" />High — appears in required section</span>
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" />Medium — mentioned 2+ times</span>
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-400" />Low — mentioned once</span>

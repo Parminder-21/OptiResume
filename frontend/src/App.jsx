@@ -53,7 +53,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a]">
+    <div className="min-h-screen bg-[var(--bg-page)]">
       {step === 'upload'  && <Home   onOptimize={handleOptimize} error={error} />}
       {step === 'loading' && <Loader />}
       {step === 'results' && <Result results={results} onReset={handleReset} resumeText={resumeText} />}

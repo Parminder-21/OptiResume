@@ -47,7 +47,7 @@ function KeywordPanel({ matched = [], missing = [], matchedCount = 0, totalCount
   const pct = totalCount > 0 ? Math.round((matchedCount / totalCount) * 100) : 0
 
   return (
-    <div className="mt-3 rounded-xl border border-white/10 overflow-hidden">
+    <div className="mt-3 rounded-xl border border-[var(--border-pri)] overflow-hidden">
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/5 transition-colors text-left"
@@ -65,7 +65,7 @@ function KeywordPanel({ matched = [], missing = [], matchedCount = 0, totalCount
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden border-t border-white/10"
+            className="overflow-hidden border-t border-[var(--border-pri)]"
           >
             <div className="px-4 py-3 space-y-3">
               {matched.length > 0 && (
@@ -191,7 +191,7 @@ export default function ScoreCard({ initial, optimized }) {
 
         {/* Formatting status */}
         <motion.div
-          className="flex items-center justify-between pt-2 border-t border-white/10"
+          className="flex items-center justify-between pt-2 border-t border-[var(--border-pri)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.0 }}
@@ -210,7 +210,7 @@ export default function ScoreCard({ initial, optimized }) {
         transition={{ delay: 1.2 }}
       >
         {(optimized.keyword_total_count > 0 || initial.keyword_total_count > 0) && (
-          <div className="mt-5 pt-4 border-t border-white/10">
+          <div className="mt-5 pt-4 border-t border-[var(--border-pri)]">
             <p className="text-xs text-slate-500 uppercase tracking-wider mb-2 font-semibold">Keyword Match Breakdown</p>
             <KeywordPanel
               matched={initial.matched_keywords || []}

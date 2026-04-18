@@ -3,6 +3,8 @@ import { useDropzone } from 'react-dropzone'
 import { motion, AnimatePresence } from 'framer-motion'
 import { uploadResume } from '../services/api.js'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
+import ThemeToggle from '../components/ThemeToggle'
 
 const SAMPLE_RESUME = `JOHN SMITH
 john.smith@email.com | (555) 123-4567 | LinkedIn.com/in/johnsmith
@@ -113,18 +115,19 @@ export default function Home({ onOptimize, error }) {
             <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-purple-500 rounded-lg flex items-center justify-center text-sm font-bold">
               ⚡
             </div>
-            <span className="font-bold text-white text-lg tracking-tight">OptiResume <span className="text-brand-400">AI</span></span>
+            <span className="font-bold text-[var(--text-pri)] text-lg tracking-tight">OptiResume <span className="text-brand-400">AI</span></span>
           </div>
           <div className="flex items-center gap-6">
+            <ThemeToggle />
             <div className="flex items-center gap-2 text-xs text-slate-500">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               AI Engine Ready
             </div>
             
             {user && (
-              <div className="flex items-center gap-4 pl-6 border-l border-white/10">
+              <div className="flex items-center gap-4 pl-6 border-l border-[var(--border-pri)]">
                 <div className="flex flex-col items-end">
-                  <span className="text-xs font-semibold text-white">{user.full_name || user.email}</span>
+                  <span className="text-xs font-semibold text-[var(--text-pri)]">{user.full_name || user.email}</span>
                   <button 
                     onClick={logout}
                     className="text-[10px] text-slate-500 hover:text-brand-400 uppercase tracking-widest font-bold transition-colors"

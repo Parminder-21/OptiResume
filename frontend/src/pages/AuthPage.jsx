@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import ThemeToggle from '../components/ThemeToggle'
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true)
@@ -34,7 +35,12 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a] relative overflow-hidden px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-page)] relative overflow-hidden px-4">
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Background blobs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
@@ -48,10 +54,10 @@ export default function AuthPage() {
           <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-purple-500 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">
             ⚡
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl font-bold text-[var(--text-pri)] tracking-tight">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
-          <p className="text-slate-400 text-sm mt-2">
+          <p className="text-[var(--text-sec)] text-sm mt-2">
             {isLogin ? 'Sign in to optimize your resume' : 'Start your journey to a better career'}
           </p>
         </div>
@@ -59,7 +65,7 @@ export default function AuthPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+              <label className="block text-xs font-semibold text-[var(--text-sec)] uppercase tracking-wider mb-1.5 ml-1">
                 Full Name
               </label>
               <input 
@@ -74,7 +80,7 @@ export default function AuthPage() {
           )}
           
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+            <label className="block text-xs font-semibold text-[var(--text-sec)] uppercase tracking-wider mb-1.5 ml-1">
               Email Address
             </label>
             <input 
@@ -88,7 +94,7 @@ export default function AuthPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+            <label className="block text-xs font-semibold text-[var(--text-sec)] uppercase tracking-wider mb-1.5 ml-1">
               Password
             </label>
             <input 
@@ -105,7 +111,7 @@ export default function AuthPage() {
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs mt-2 text-center font-medium"
+              className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-xs mt-2 text-center font-medium"
             >
               {error}
             </motion.p>
@@ -115,7 +121,7 @@ export default function AuthPage() {
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs mt-2 text-center font-medium"
+              className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs mt-2 text-center font-medium"
             >
               {success}
             </motion.p>
@@ -136,8 +142,8 @@ export default function AuthPage() {
           </motion.button>
         </form>
 
-        <div className="mt-8 text-center pt-6 border-t border-white/5">
-          <p className="text-slate-500 text-sm">
+        <div className="mt-8 text-center pt-6 border-t border-[var(--border-pri)]">
+          <p className="text-[var(--text-sec)] text-sm">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button 
               onClick={() => {

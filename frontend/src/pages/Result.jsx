@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
+import ThemeToggle from '../components/ThemeToggle'
 import ScoreCard  from '../components/ScoreCard.jsx'
 import SkillGap   from '../components/SkillGap.jsx'
 import ResumeDiff from '../components/ResumeDiff.jsx'
@@ -40,15 +42,16 @@ export default function Result({ results, onReset, resumeText }) {
 
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* ── Nav ────────────────────────────────────────────────────────── */}
-        <nav className="flex items-center justify-between px-6 py-4 border-b border-white/5 sticky top-0 bg-[#0a0e1a]/80 backdrop-blur-md z-20">
+        <nav className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-pri)] sticky top-0 bg-[var(--bg-glass)] backdrop-blur-md z-20">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 bg-gradient-to-br from-brand-500 to-purple-500 rounded-lg flex items-center justify-center text-sm">
               ⚡
             </div>
-            <span className="font-bold text-white tracking-tight">OptiResume <span className="text-brand-400">AI</span></span>
+            <span className="font-bold text-[var(--text-pri)] tracking-tight">OptiResume <span className="text-brand-400">AI</span></span>
           </div>
 
           <div className="flex items-center gap-6">
+            <ThemeToggle />
             <div className="flex items-center gap-3">
               <motion.button
                 onClick={handleDownload}
@@ -68,9 +71,9 @@ export default function Result({ results, onReset, resumeText }) {
             </div>
 
             {user && (
-              <div className="flex items-center gap-3 pl-6 border-l border-white/10">
+              <div className="flex items-center gap-3 pl-6 border-l border-[var(--border-pri)]">
                 <div className="flex flex-col items-end">
-                  <span className="text-[11px] font-semibold text-white">{user.full_name || user.email}</span>
+                  <span className="text-[11px] font-semibold text-[var(--text-pri)]">{user.full_name || user.email}</span>
                   <button 
                     onClick={logout}
                     className="text-[9px] text-slate-500 hover:text-brand-400 uppercase tracking-widest font-bold transition-colors"

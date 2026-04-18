@@ -52,8 +52,8 @@ export default function Loader() {
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-white mb-2">Optimizing Your Resume</h2>
-        <p className="text-slate-400 mb-10 text-sm">AI is analyzing and rewriting for maximum ATS impact</p>
+        <h2 className="text-2xl font-bold text-[var(--text-pri)] mb-2">Optimizing Your Resume</h2>
+        <p className="text-[var(--text-sec)] mb-10 text-sm">AI is analyzing and rewriting for maximum ATS impact</p>
 
         {/* Progress bar */}
         <div className="score-bar-track mb-3">
@@ -64,7 +64,7 @@ export default function Loader() {
             transition={{ duration: 0.4, ease: 'easeOut' }}
           />
         </div>
-        <p className="text-right text-xs text-slate-500 mb-8">{Math.round(progress)}%</p>
+        <p className="text-right text-xs text-[var(--text-sec)] mb-8">{Math.round(progress)}%</p>
 
         {/* Step messages */}
         <div className="glass-card p-4 text-left space-y-2">
@@ -77,11 +77,11 @@ export default function Loader() {
                   className="flex items-center gap-3 text-sm"
                 >
                   {i < currentStep ? (
-                    <span className="text-green-400 text-base">✓</span>
+                    <span className="text-green-500 text-base">✓</span>
                   ) : (
                     <span className="w-4 h-4 border-2 border-brand-400 border-t-transparent rounded-full animate-spin inline-block flex-shrink-0" />
                   )}
-                  <span className={i < currentStep ? 'text-slate-400 line-through' : 'text-white'}>
+                  <span className={i < currentStep ? 'text-[var(--text-sec)] line-through' : 'text-[var(--text-pri)]'}>
                     {step.label}
                   </span>
                 </motion.div>
