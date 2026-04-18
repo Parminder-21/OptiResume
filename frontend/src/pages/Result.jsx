@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import ThemeToggle from '../components/ThemeToggle'
@@ -14,6 +15,16 @@ export default function Result({ results, onReset, resumeText }) {
   const [downloading, setDownloading] = useState(false)
   const [downloadErr, setDownloadErr] = useState(null)
   const [activeTab,   setActiveTab]   = useState('overview') // 'overview' | 'diff' | 'resume'
+
+  // Trigger confetti on successful optimization view
+  useEffect(() => {
+    confetti({
+      particleCount: 150,
+      spread: 80,
+      origin: { y: 0.6 },
+      colors: ['#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#22c55e']
+    });
+  }, []);
 
   const { scores, skill_gaps, diff, optimized_resume } = results
 

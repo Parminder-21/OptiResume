@@ -63,7 +63,9 @@ export default function Home({ onOptimize, error }) {
       setResumeText(data.resume_text)
       setCharCount(data.char_count)
     } catch (err) {
-      setUploadError('Failed to parse PDF. Try pasting text instead.')
+      console.error("PDF Upload Error:", err)
+      const errorMsg = err?.response?.data?.detail || err.message || 'Unknown network error'
+      setUploadError(`Upload failed: ${errorMsg}. Try pasting text instead.`)
       setResumeFile(null)
     } finally {
       setUploading(false)
