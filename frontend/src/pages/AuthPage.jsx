@@ -72,7 +72,7 @@ export default function AuthPage() {
                 type="text" 
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="input-field" 
+                className="input-premium" 
                 placeholder="John Doe"
                 required={!isLogin}
               />
@@ -87,7 +87,7 @@ export default function AuthPage() {
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-field" 
+              className="input-premium" 
               placeholder="john@example.com"
               required
             />
@@ -101,7 +101,7 @@ export default function AuthPage() {
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="input-field" 
+              className="input-premium" 
               placeholder="••••••••"
               required
             />
@@ -131,7 +131,7 @@ export default function AuthPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             disabled={loading}
-            className="btn-primary w-full py-3 mt-6 text-base font-semibold"
+            className="btn-premium w-full py-3 mt-6 text-base font-semibold"
           >
             {loading ? (
               <div className="flex items-center justify-center gap-2">
