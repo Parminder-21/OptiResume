@@ -10,6 +10,10 @@ import BentoGallery from '../components/BentoGallery'
 import InteractiveTimeline from '../components/InteractiveTimeline'
 import Footer from '../components/Footer'
 import { CloudUpload, Github, FileText, ChevronRight, Sparkles, ChevronDown, CheckCircle, ArrowRight } from 'lucide-react'
+import useSound from 'use-sound'
+
+const POP_SOUND = 'data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
+const SWOOSH_SOUND = 'data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
 
 const SAMPLE_RESUME = `JOHN SMITH\njohn.smith@email.com | (555) 123-4567\n\nEXPERIENCE\nSoftware Engineer - TechCorp (2020-2023)\n- Developed REST APIs using Python and FastAPI\n- Optimized database queries reducing latency by 40%`
 
@@ -33,6 +37,9 @@ export default function Home({ onOptimize, error }) {
     damping: 30,
     restDelta: 0.001
   });
+
+  const [playPop] = useSound(POP_SOUND, { volume: 0.5 });
+  const [playHover] = useSound(SWOOSH_SOUND, { volume: 0.2 });
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
@@ -81,30 +88,30 @@ export default function Home({ onOptimize, error }) {
       <HeroCanvas />
 
       {/* Sticky Premium Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-bg-page/80 backdrop-blur-lg border-b border-white/5 py-4' : 'bg-transparent py-6'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-[var(--bg-glass)] backdrop-blur-xl border-b border-[var(--border-pri)] py-4 shadow-sm' : 'bg-transparent py-6'}`}>
         <nav className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-2.5 group cursor-pointer">
             <div className="w-10 h-10 bg-gradient-to-br from-brand-pri to-brand-sec rounded-xl flex items-center justify-center text-lg shadow-lg shadow-brand-pri/20 group-hover:scale-110 transition-transform">
               ⚡
             </div>
-            <span className="font-black text-white text-xl tracking-tighter uppercase italic">OptiResume</span>
+            <span className="font-black text-[var(--text-pri)] text-xl tracking-tighter uppercase italic">OptiResume</span>
           </div>
           
           <div className="flex items-center gap-8">
-            <div className="hidden md:flex items-center gap-6 text-xs font-bold uppercase tracking-widest text-slate-400">
+            <div className="hidden md:flex items-center gap-6 text-xs font-bold uppercase tracking-widest text-[var(--text-sec)]">
               <a href="#" className="hover:text-brand-400 transition-colors">Analyzer</a>
               <a href="#" className="hover:text-brand-400 transition-colors">Optimizer</a>
               <a href="#" className="hover:text-brand-400 transition-colors">Security</a>
             </div>
-            <div className="h-6 w-px bg-white/10 mx-2" />
+            <div className="h-6 w-px bg-[var(--text-pri)]/10 mx-2" />
             <ThemeToggle />
             {user && (
               <div className="flex items-center gap-4">
                 <div className="hidden sm:flex flex-col items-end">
-                   <span className="text-xs font-bold text-white tracking-tight">{user.full_name || user.email}</span>
+                   <span className="text-xs font-bold text-[var(--text-pri)] tracking-tight">{user.full_name || user.email}</span>
                    <button onClick={logout} className="text-[10px] text-brand-400 uppercase font-black tracking-widest hover:text-brand-300">Logout</button>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-pri/20 to-brand-sec/20 border border-white/10 flex items-center justify-center font-bold text-brand-400">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-pri/20 to-brand-sec/20 border border-[var(--border-pri)] flex items-center justify-center font-bold text-brand-400">
                   {user.email.charAt(0).toUpperCase()}
                 </div>
               </div>
@@ -127,24 +134,28 @@ export default function Home({ onOptimize, error }) {
               <Sparkles size={12} className="text-brand-400" />
               Next-Gen Recruitment Intelligence
             </span>
-            <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[0.9] mb-8">
+            <h1 className="text-6xl md:text-8xl font-black text-[var(--text-pri)] tracking-tighter leading-[0.9] mb-8">
               BEAT THE <br />
               <span className="text-gradient">GATEKEEPERS.</span>
             </h1>
-            <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-12">
+            <p className="text-[var(--text-sec)] text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-12">
               Don't leave your career to chance. Our AI-driven ATS simulator analyzes, weights, and rewrites your resume for maximum semantic visibility.
             </p>
             
             <div className="flex flex-col md:flex-row items-center justify-center gap-6">
               <button 
-                onClick={scrollToOptimizer}
+                onClick={() => {
+                  playPop();
+                  scrollToOptimizer();
+                }}
+                onMouseEnter={() => playHover()}
                 className="btn-premium group"
               >
                 Scan My Resume 
                 <ChevronRight className="group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="flex items-center gap-2 text-sm font-bold text-white hover:text-brand-400 transition-colors">
-                <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center">
+              <button className="flex items-center gap-2 text-sm font-bold text-[var(--text-pri)] hover:text-brand-400 transition-colors">
+                <div className="w-10 h-10 rounded-full border border-[var(--border-pri)] flex items-center justify-center bg-[var(--bg-glass)]">
                   ▶
                 </div>
                 Watch Demo
@@ -169,11 +180,11 @@ export default function Home({ onOptimize, error }) {
         <InteractiveTimeline />
 
         {/* THE OPTIMIZER (Core Functionality) */}
-        <section ref={optimizerRef} className="py-24 px-6 bg-slate-950">
+        <section ref={optimizerRef} className="py-24 px-6 bg-[var(--bg-surface)]">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
                <span className="label-premium">The Optimizer</span>
-               <h2 className="text-4xl font-bold mt-4">Start Your <span className="text-gradient">Transformation</span></h2>
+               <h2 className="text-4xl font-bold mt-4 text-[var(--text-pri)]">Start Your <span className="text-gradient">Transformation</span></h2>
             </div>
 
             <motion.div
@@ -185,9 +196,9 @@ export default function Home({ onOptimize, error }) {
               <div className="grid md:grid-cols-2">
                 
                 {/* ── Left Side: Uploader ── */}
-                <div className="p-8 md:p-12 border-b md:border-b-0 md:border-r border-white/5 space-y-8">
+                <div className="p-8 md:p-12 border-b md:border-b-0 md:border-r border-[var(--border-pri)] space-y-8">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold flex items-center gap-3 text-white">
+                    <h3 className="text-lg font-bold flex items-center gap-3 text-[var(--text-pri)]">
                       <div className="w-8 h-8 rounded-lg bg-brand-pri/20 flex items-center justify-center text-xs text-brand-pri">01</div>
                       Resume Assets
                     </h3>
@@ -213,7 +224,7 @@ export default function Home({ onOptimize, error }) {
                       >
                         <input {...getInputProps()} />
                         <CloudUpload size={48} className="mx-auto mb-4 text-slate-700" />
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-[var(--text-sec)]">
                           {resumeFile ? <span className="text-brand-pri font-bold">✓ {resumeFile.name}</span> : "Drop your PDF or click to browse"}
                         </p>
                       </motion.div>
@@ -236,7 +247,7 @@ export default function Home({ onOptimize, error }) {
 
                 {/* ── Right Side: Job Desc ── */}
                 <div className="p-8 md:p-12 space-y-8">
-                  <h3 className="text-lg font-bold flex items-center gap-3 text-white">
+                  <h3 className="text-lg font-bold flex items-center gap-3 text-[var(--text-pri)]">
                     <div className="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-xs text-pink-500">02</div>
                     Target Role
                   </h3>
@@ -256,7 +267,7 @@ export default function Home({ onOptimize, error }) {
                         {uploading ? "Parsing..." : "Analyze & Optimize"}
                         <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                      </button>
-                     <p className="text-[10px] text-center text-slate-500 mt-4 uppercase tracking-tighter">
+                     <p className="text-[10px] text-center text-[var(--text-sec)] mt-4 uppercase tracking-tighter">
                         Min. 50 characters required for both fields
                      </p>
                   </div>
@@ -270,11 +281,6 @@ export default function Home({ onOptimize, error }) {
         {/* FOOTER */}
         <Footer />
       </main>
-
-      {/* Floating Cursor/Circle Effect for Premium Feel */}
-      <div className="hidden lg:block">
-        <div className="cursor-dot md:w-3 md:h-3" />
-      </div>
     </div>
   )
 }

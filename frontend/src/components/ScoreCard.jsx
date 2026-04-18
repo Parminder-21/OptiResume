@@ -52,10 +52,10 @@ function KeywordPanel({ matched = [], missing = [], matchedCount = 0, totalCount
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/5 transition-colors text-left"
       >
-        <span className="text-xs text-slate-400 font-medium">
+        <span className="text-xs text-[var(--text-sec)] font-medium">
           {label} — {matchedCount} / {totalCount} keywords matched ({pct}%)
         </span>
-        <span className="text-slate-600 text-xs">{open ? '▲' : '▼'}</span>
+        <span className="text-[var(--text-sec)] text-xs">{open ? '▲' : '▼'}</span>
       </button>
 
       <AnimatePresence>
@@ -113,7 +113,7 @@ export default function ScoreCard({ initial, optimized }) {
       <div className="flex items-center justify-between mb-8">
         {/* Initial score */}
         <div className="text-center">
-          <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">Before</p>
+          <p className="text-xs text-[var(--text-sec)] mb-1 uppercase tracking-wider">Before</p>
           <motion.p
             className={`text-5xl font-bold ${initColor.text}`}
             initial={{ opacity: 0, scale: 0.5 }}
@@ -147,7 +147,7 @@ export default function ScoreCard({ initial, optimized }) {
 
         {/* Optimized score */}
         <div className="text-center">
-          <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">After</p>
+          <p className="text-xs text-[var(--text-sec)] mb-1 uppercase tracking-wider">After</p>
           <motion.p
             className={`text-5xl font-bold ${optColor.text}`}
             initial={{ opacity: 0, scale: 0.5 }}
@@ -175,12 +175,12 @@ export default function ScoreCard({ initial, optimized }) {
               transition={{ delay: 0.4 + idx * 0.15 }}
             >
               <div className="flex justify-between items-center mb-1.5">
-                <span className="text-sm text-slate-300 flex items-center gap-2">
+                <span className="text-sm text-[var(--text-pri)] flex items-center gap-2">
                   <span>{icon}</span> {label}
                 </span>
                 <span className="text-sm font-mono">
-                  <span className="text-slate-500">{initVal}%</span>
-                  <span className="text-slate-600 mx-1">→</span>
+                  <span className="text-[var(--text-sec)]">{initVal}%</span>
+                  <span className="text-[var(--text-sec)] mx-1">→</span>
                   <span className={`font-semibold ${oc.text}`}>{optVal}%</span>
                 </span>
               </div>
@@ -196,7 +196,7 @@ export default function ScoreCard({ initial, optimized }) {
           animate={{ opacity: 1 }}
           transition={{ delay: 1.0 }}
         >
-          <span className="text-sm text-slate-300 flex items-center gap-2">
+          <span className="text-sm text-[var(--text-pri)] flex items-center gap-2">
             <span>📄</span> Formatting
           </span>
           <span className="text-sm text-green-400 font-medium">{optimized.formatting}</span>
@@ -211,7 +211,7 @@ export default function ScoreCard({ initial, optimized }) {
       >
         {(optimized.keyword_total_count > 0 || initial.keyword_total_count > 0) && (
           <div className="mt-5 pt-4 border-t border-[var(--border-pri)]">
-            <p className="text-xs text-slate-500 uppercase tracking-wider mb-2 font-semibold">Keyword Match Breakdown</p>
+            <p className="text-xs text-[var(--text-sec)] uppercase tracking-wider mb-2 font-semibold">Keyword Match Breakdown</p>
             <KeywordPanel
               matched={initial.matched_keywords || []}
               missing={initial.missing_keywords || []}

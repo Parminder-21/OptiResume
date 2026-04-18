@@ -104,16 +104,17 @@
   }
 
   .input-premium {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-glass);
     border: 1px solid var(--glass-border);
-    @apply w-full px-6 py-4 rounded-2xl text-white outline-none 
+    color: var(--text-pri);
+    @apply w-full px-6 py-4 rounded-2xl outline-none 
            focus:border-brand-pri focus:ring-4 focus:ring-indigo-500/10 
            transition-all duration-300 placeholder-slate-500;
   }
 
   /* Section Titles */
   .label-premium {
-    @apply inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full
+    @apply inline-flex items-center gap-2 bg-[var(--bg-glass)] border border-[var(--border-pri)] px-4 py-1.5 rounded-full
            text-[10px] uppercase tracking-[0.2em] font-black text-brand-400 mb-6;
   }
 }

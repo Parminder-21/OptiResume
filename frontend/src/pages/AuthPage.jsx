@@ -111,7 +111,7 @@ export default function AuthPage() {
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-xs mt-2 text-center font-medium"
+              className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-xs mt-2 text-center font-medium"
             >
               {error}
             </motion.p>
@@ -121,7 +121,7 @@ export default function AuthPage() {
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs mt-2 text-center font-medium"
+              className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs mt-2 text-center font-medium"
             >
               {success}
             </motion.p>

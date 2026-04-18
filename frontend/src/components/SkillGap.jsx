@@ -11,7 +11,7 @@ export default function SkillGap({ skillGaps }) {
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <span className="text-4xl mb-3">🎉</span>
           <p className="text-green-400 font-semibold">No major skill gaps detected!</p>
-          <p className="text-slate-500 text-sm mt-1">Your resume covers the key requirements well.</p>
+          <p className="text-[var(--text-sec)] text-sm mt-1">Your resume covers the key requirements well.</p>
         </div>
       </div>
     )
@@ -29,7 +29,7 @@ export default function SkillGap({ skillGaps }) {
     <div className="glass-card p-6">
       <div className="flex items-center justify-between mb-4">
         <p className="section-title mb-0">Skill Gap Analysis</p>
-        <span className="text-xs text-slate-500">{sorted.length} skills missing</span>
+        <span className="text-xs text-[var(--text-sec)]">{sorted.length} skills missing</span>
       </div>
 
       {/* Summary counts */}
@@ -71,7 +71,7 @@ export default function SkillGap({ skillGaps }) {
       </div>
 
       {/* Legend */}
-      <div className="mt-5 pt-4 border-t border-[var(--border-pri)] flex gap-5 text-xs text-slate-500">
+      <div className="mt-5 pt-4 border-t border-[var(--border-pri)] flex gap-5 text-xs text-[var(--text-sec)]">
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-400" />High — appears in required section</span>
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" />Medium — mentioned 2+ times</span>
         <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-400" />Low — mentioned once</span>

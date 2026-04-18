@@ -36,8 +36,8 @@ export default function Result({ results, onReset, resumeText }) {
     <div className="min-h-screen flex flex-col">
       {/* Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-500/10 rounded-full blur-3xl opacity-50" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-500/10 rounded-full blur-3xl opacity-50" />
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -99,11 +99,11 @@ export default function Result({ results, onReset, resumeText }) {
                 🎯
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">
+                <h2 className="text-lg font-bold text-[var(--text-pri)]">
                   ATS Score improved by{' '}
-                  <span className="text-green-400">+{improvement}%</span>
+                  <span className="text-green-500 font-black">+{improvement}%</span>
                 </h2>
-                <p className="text-slate-400 text-sm mt-0.5">
+                <p className="text-[var(--text-sec)] text-sm mt-0.5">
                   {changedCount} bullet{changedCount !== 1 ? 's' : ''} rewritten ·{' '}
                   {skill_gaps.length} skill gap{skill_gaps.length !== 1 ? 's' : ''} identified ·{' '}
                   <span className="text-green-400">{Math.round(scores.optimized.overall)}% overall match</span>
@@ -114,13 +114,13 @@ export default function Result({ results, onReset, resumeText }) {
             {/* Quick stats */}
             <div className="flex gap-4 flex-shrink-0">
               <div className="text-center">
-                <p className="text-2xl font-bold text-slate-500">{Math.round(scores.initial.overall)}%</p>
-                <p className="text-xs text-slate-600">Before</p>
+                <p className="text-2xl font-bold text-[var(--text-sec)]">{Math.round(scores.initial.overall)}%</p>
+                <p className="text-xs text-[var(--text-sec)]">Before</p>
               </div>
-              <div className="flex items-center text-green-400 text-xl">→</div>
+              <div className="flex items-center text-green-500 font-bold text-xl">→</div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-green-400">{Math.round(scores.optimized.overall)}%</p>
-                <p className="text-xs text-slate-500">After</p>
+                <p className="text-2xl font-bold text-green-500">{Math.round(scores.optimized.overall)}%</p>
+                <p className="text-xs text-[var(--text-sec)]">After</p>
               </div>
             </div>
           </motion.div>
@@ -137,8 +137,8 @@ export default function Result({ results, onReset, resumeText }) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-all border-b-2 -mb-px ${
                   activeTab === tab.id
-                    ? 'text-white border-brand-500 bg-brand-500/10'
-                    : 'text-slate-500 border-transparent hover:text-slate-300 hover:bg-white/5'
+                    ? 'text-[var(--text-pri)] border-brand-500 bg-brand-500/10'
+                    : 'text-[var(--text-sec)] border-transparent hover:text-[var(--text-pri)] hover:bg-[var(--bg-glass)]'
                 }`}
               >
                 {tab.label}
@@ -182,9 +182,9 @@ export default function Result({ results, onReset, resumeText }) {
               <div className="glass-card p-5">
                 <div className="flex items-center justify-between mb-3">
                   <p className="section-title mb-0">Original Resume</p>
-                  <span className="text-xs text-slate-600">{resumeText?.length || 0} chars</span>
+                  <span className="text-xs text-[var(--text-sec)]">{resumeText?.length || 0} chars</span>
                 </div>
-                <pre className="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap font-mono overflow-y-auto max-h-[600px] pr-2">
+                <pre className="text-xs text-[var(--text-sec)] leading-relaxed whitespace-pre-wrap font-mono overflow-y-auto max-h-[600px] pr-2">
                   {resumeText || 'No original text available.'}
                 </pre>
               </div>
@@ -192,10 +192,10 @@ export default function Result({ results, onReset, resumeText }) {
               {/* Optimized */}
               <div className="glass-card p-5 border-green-500/20">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="section-title mb-0 text-green-400">Optimized Resume</p>
-                  <span className="text-xs text-slate-600">{optimized_resume?.length || 0} chars</span>
+                  <p className="section-title mb-0 text-green-500 font-bold">Optimized Resume</p>
+                  <span className="text-xs text-[var(--text-sec)]">{optimized_resume?.length || 0} chars</span>
                 </div>
-                <pre className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap font-mono overflow-y-auto max-h-[600px] pr-2">
+                <pre className="text-xs text-[var(--text-pri)] leading-relaxed whitespace-pre-wrap font-mono overflow-y-auto max-h-[600px] pr-2">
                   {optimized_resume || 'No optimized text available.'}
                 </pre>
               </div>

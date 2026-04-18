@@ -36,16 +36,16 @@ function DiffRow({ item, index, isExpanded, onToggle }) {
       className={`rounded-xl overflow-hidden border ${
         hasChange
           ? 'border-brand-500/30 bg-brand-500/5'
-          : 'border-white/5 bg-white/2'
+          : 'border-[var(--border-pri)] bg-[var(--bg-glass)]'
       }`}
     >
       {/* Row header */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--border-pri)] transition-colors"
       >
-        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${hasChange ? 'bg-green-400' : 'bg-slate-600'}`} />
-        <span className="text-sm text-slate-300 flex-1 truncate">
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${hasChange ? 'bg-green-500' : 'bg-slate-400'}`} />
+        <span className="text-sm text-[var(--text-pri)] flex-1 truncate">
           {item.original.slice(0, 80)}{item.original.length > 80 ? '…' : ''}
         </span>
         {hasChange && (
@@ -69,17 +69,17 @@ function DiffRow({ item, index, isExpanded, onToggle }) {
             <div className="grid grid-cols-2 gap-px bg-[var(--border-pri)] border-t border-[var(--border-pri)]">
               {/* Original */}
               <div className="bg-[var(--bg-page)] px-4 py-3">
-                <p className="text-xs text-red-500 dark:text-red-400 font-semibold uppercase tracking-wider mb-2">Original</p>
+                <p className="text-xs text-red-500 font-semibold uppercase tracking-wider mb-2">Original</p>
                 <p
-                  className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed diff-text"
+                  className="text-sm text-[var(--text-sec)] leading-relaxed diff-text"
                   dangerouslySetInnerHTML={{ __html: origHtml }}
                 />
               </div>
               {/* Optimized */}
               <div className="bg-[var(--bg-surface)] px-4 py-3">
-                <p className="text-xs text-green-600 dark:text-green-400 font-semibold uppercase tracking-wider mb-2">Optimized</p>
+                <p className="text-xs text-green-600 font-semibold uppercase tracking-wider mb-2">Optimized</p>
                 <p
-                  className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed diff-text"
+                  className="text-sm text-[var(--text-pri)] leading-relaxed diff-text"
                   dangerouslySetInnerHTML={{ __html: optHtml }}
                 />
               </div>
@@ -125,13 +125,13 @@ export default function ResumeDiff({ diff }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <p className="section-title mb-0">Resume Improvements</p>
-        <div className="flex items-center gap-3 text-xs text-slate-500">
+        <div className="flex items-center gap-3 text-xs text-[var(--text-sec)]">
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-green-400" />
+            <span className="w-2 h-2 rounded-full bg-green-500" />
             {changedCount} improved
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-slate-600" />
+            <span className="w-2 h-2 rounded-full bg-slate-400" />
             {unchangedCount} unchanged
           </span>
         </div>
@@ -141,10 +141,10 @@ export default function ResumeDiff({ diff }) {
       <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
         <span className="text-2xl">✨</span>
         <div>
-          <p className="text-green-400 font-semibold text-sm">
+          <p className="text-green-500 font-semibold text-sm">
             {changedCount} of {diff.length} bullets improved
           </p>
-          <p className="text-slate-400 text-xs mt-0.5">
+          <p className="text-[var(--text-sec)] text-xs mt-0.5">
             Click any bullet to see the before/after comparison
           </p>
         </div>
@@ -159,7 +159,7 @@ export default function ResumeDiff({ diff }) {
             className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${
               filter === f
                 ? 'bg-brand-500 text-white'
-                : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                : 'bg-[var(--bg-glass)] text-[var(--text-sec)] hover:bg-[var(--border-pri)]'
             }`}
           >
             {f === 'all' ? `All (${diff.length})` : f === 'changed' ? `Improved (${changedCount})` : `Unchanged (${unchangedCount})`}
