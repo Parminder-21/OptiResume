@@ -56,7 +56,7 @@ export default function BentoGallery() {
             {feat.img && (
               <div className="absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-110 opacity-40 group-hover:opacity-60">
                 <img 
-                  src={`file:///${feat.img}`} 
+                  src={feat.img} 
                   alt={feat.title}
                   className="w-full h-full object-cover"
                 />
@@ -65,13 +65,13 @@ export default function BentoGallery() {
             )}
 
             <div className="relative z-10 h-full flex flex-col justify-end">
-              <div className="mb-4 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <div className="mb-4 w-10 h-10 rounded-xl bg-[var(--bg-glass)] border border-[var(--border-pri)] flex items-center justify-center">
                 {feat.icon}
               </div>
-              <h3 className="text-xl font-bold mb-2 group-hover:text-brand-400 transition-colors">
+              <h3 className="text-xl font-bold mb-2 text-[var(--text-pri)] group-hover:text-brand-400 transition-colors">
                 {feat.title}
               </h3>
-              <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
+              <p className="text-sm text-[var(--text-sec)] leading-relaxed max-w-xs">
                 {feat.desc}
               </p>
             </div>
