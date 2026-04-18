@@ -51,6 +51,11 @@ export default function Home({ onOptimize, error }) {
     optimizerRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const handleComingSoon = (e) => {
+    e.preventDefault()
+    window.alert("We are working on this feature! Please check back soon.")
+  }
+
   // ── Dropzone ──────────────────────────────────────────────────────────────
   const onDrop = useCallback(async (acceptedFiles) => {
     const file = acceptedFiles[0]
@@ -101,9 +106,9 @@ export default function Home({ onOptimize, error }) {
           
           <div className="flex items-center gap-8">
             <div className="hidden md:flex items-center gap-6 text-xs font-bold uppercase tracking-widest text-[var(--text-sec)]">
-              <a href="#" className="hover:text-brand-400 transition-colors">Analyzer</a>
-              <a href="#" className="hover:text-brand-400 transition-colors">Optimizer</a>
-              <a href="#" className="hover:text-brand-400 transition-colors">Security</a>
+              <a href="#" onClick={handleComingSoon} className="hover:text-brand-400 transition-colors">Analyzer</a>
+              <a href="#" onClick={handleComingSoon} className="hover:text-brand-400 transition-colors">Optimizer</a>
+              <a href="#" onClick={handleComingSoon} className="hover:text-brand-400 transition-colors">Security</a>
             </div>
             <div className="h-6 w-px bg-[var(--text-pri)]/10 mx-2" />
             <ThemeToggle />
@@ -156,7 +161,10 @@ export default function Home({ onOptimize, error }) {
                 Scan My Resume 
                 <ChevronRight className="group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="flex items-center gap-2 text-sm font-bold text-[var(--text-pri)] hover:text-brand-400 transition-colors">
+              <button 
+                onClick={handleComingSoon}
+                className="flex items-center gap-2 text-sm font-bold text-[var(--text-pri)] hover:text-brand-400 transition-colors"
+              >
                 <div className="w-10 h-10 rounded-full border border-[var(--border-pri)] flex items-center justify-center bg-[var(--bg-glass)]">
                   ▶
                 </div>
