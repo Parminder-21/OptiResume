@@ -107,7 +107,7 @@
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--glass-border);
     @apply w-full px-6 py-4 rounded-2xl text-white outline-none 
-           focus:border-brand-pri focus:ring-4 focus:ring-brand-pri/10 
+           focus:border-brand-pri focus:ring-4 focus:ring-indigo-500/10 
            transition-all duration-300 placeholder-slate-500;
   }
 
@@ -120,7 +120,7 @@
 
 /* Custom Cursor Effects */
 .cursor-dot {
-  @apply fixed top-0 left-0 w-8 h-8 bg-brand-pri/20 border border-brand-pri/30 rounded-full
+  @apply fixed top-0 left-0 w-8 h-8 bg-indigo-500/20 border border-indigo-500/30 rounded-full
          pointer-events-none z-[9999] transition-transform duration-150 ease-out;
 }
 
