@@ -1,19 +1,13 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Home   from './pages/home.jsx'
 import Result from './pages/Result.jsx'
 import Loader from './components/Loader.jsx'
 import AuthPage from './pages/AuthPage.jsx'
 import { optimizeResume } from './services/api.js'
 import { useAuth } from './context/AuthContext.jsx'
-
-/**
- * Global app state:
- *   step:         'upload' | 'loading' | 'results'
- *   resumeText:   string  (extracted or pasted)
- *   jobDesc:      string
- *   results:      OptimizeResponse | null
- *   error:        string | null
- */
+import { ThemeProvider } from './context/ThemeContext.jsx'
+import CustomCursor from './components/CustomCursor.jsx'
 
 export default function App() {
   const { user } = useAuth()
@@ -49,14 +43,48 @@ export default function App() {
   }
 
   if (!user) {
-    return <AuthPage />
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+           key="auth"
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           exit={{ opacity: 0 }}
+        >
+          <AuthPage />
+        </motion.div>
+      </AnimatePresence>
+    )
   }
+
+  const pageVariants = {
+    initial: { opacity: 0, scale: 0.98 },
+    enter: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut" } },
+    exit: { opacity: 0, scale: 1.02, transition: { duration: 0.4, ease: "easeIn" } }
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg-page)]">
-      {step === 'upload'  && <Home   onOptimize={handleOptimize} error={error} />}
-      {step === 'loading' && <Loader />}
-      {step === 'results' && <Result results={results} onReset={handleReset} resumeText={resumeText} />}
+      <CustomCursor />
+      <AnimatePresence mode="wait" initial={false}>
+        {step === 'upload' && (
+          <motion.div key="home" variants={pageVariants} initial="initial" animate="enter" exit="exit">
+            <Home onOptimize={handleOptimize} error={error} />
+          </motion.div>
+        )}
+        
+        {step === 'loading' && (
+          <motion.div key="loading" variants={pageVariants} initial="initial" animate="enter" exit="exit">
+            <Loader />
+          </motion.div>
+        )}
+        
+        {step === 'results' && (
+          <motion.div key="results" variants={pageVariants} initial="initial" animate="enter" exit="exit">
+            <Result results={results} onReset={handleReset} resumeText={resumeText} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

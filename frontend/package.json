@@ -9,13 +9,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "axios": "^1.7.2",
+    "canvas-confetti": "^1.9.4",
     "framer-motion": "^11.2.10",
     "lucide-react": "^0.383.0",
+    "react": "^18.3.1",
     "react-diff-viewer-continued": "^4.0.0",
-    "react-dropzone": "^14.2.3"
+    "react-dom": "^18.3.1",
+    "react-dropzone": "^14.2.3",
+    "three": "^0.145.0",
+    "use-sound": "^5.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
