@@ -8,12 +8,13 @@ OptiResume AI is a production-grade platform designed to help candidates beat Ap
 
 ## 🌟 Key Features
 
+- **🎬 Premium Cinematic UI**: State-of-the-art **Glassmorphism 2.0** design, interactive 3D elements (Three.js), customized mouse cursors, and liquid mesh gradients.
+- **🌗 Dynamic Theme System**: Seamless toggle between a Deep Space Dark Mode and a crisp Professional Light Mode.
 - **🎯 Real-Time ATS Scoring**: Instant scoring of your resume against any job description using SBERT semantic matching.
 - **🤖 Groq-Powered Optimization**: Bullet point rewriting using `Llama-3.3-70b` for high-impact, keyword-rich content.
-- **🔍 Skill Gap Analysis**: Intelligent detection of missing critical, medium, and low-priority skills.
-- **📄 Dual-Engine Document Export**: Professional generation of PDF and DOCX files with a Word-to-PDF pipeline and ReportLab fallback.
-- **🛡️ ATS Content Validation**: Smart heuristics to prevent non-resume documents from being processed.
-- **✨ Cinematic Dashboard**: A data-dense, animated UI built with React and Framer Motion.
+- **📊 Skill Gap Analysis**: Intelligent detection of missing critical, medium, and low-priority skills.
+- **📄 Dual-Engine Document Export**: Professional generation of PDF and DOCX files.
+- **✨ Fluid Motion**: Seamless page transitions and micro-interactions powered by Framer Motion.
 
 ---
 
