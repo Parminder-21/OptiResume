@@ -221,7 +221,7 @@ def rewrite_resume(
     MAX_BULLETS = 12  # Cap at 12 to avoid over-optimization
     bullets_text = "\n".join(f"{i+1}. {b}" for i, b in enumerate(bullets[:MAX_BULLETS]))
 
-    # In partial mode: don't inject JD-specific keywords (different domain)
+    # In partial mode: don't inject JD-specific keywords to stay safe, but still rewrite aggressively
     keywords_str = ""
     if target_keywords and not partial_mode:
         keywords_str = f"\nKey JD keywords (incorporate selectively where natural):\n{', '.join(target_keywords[:15])}\n"
@@ -232,25 +232,7 @@ def rewrite_resume(
         context_str = (
             f"\n\nADDITIONAL CONTEXT FROM THE CANDIDATE:\n"
             f"{user_context.strip()[:1000]}\n"
-            "Use this context to enrich bullet points where applicable (without fabricating)."
-        )
-
-    if partial_mode:
-        # Partial mode: still try to improve as much as possible, just be careful with fabrication
-        rewrite_instruction = (
-            "The resume and job description have low overlap but some common ground. "
-            "Focus on improving the professional impact of each bullet point. "
-            "Use strong action verbs, remove passive voice, and clarify achievements. "
-            "If you can find valid ways to align the language with the job description without fabricating new skills, do so. "
-            "Rewrite at least 60% of the provided bullets to significantly improve their quality."
-        )
-    else:
-        # Full mode: selective keyword optimization
-        rewrite_instruction = (
-            "Review each bullet carefully. Rewrite bullets to incorporate missing JD keywords and align with target requirements. "
-            "Use the provided candidate context to add specific details/metrics. "
-            "Ensure the final output sounds professional and highly relevant to the JD. "
-            "Rewrite at least 70% of the bullets for maximum impact."
+            "Use this context to enrich bullet points wherever applicable."
         )
 
     user_message = (
@@ -259,9 +241,9 @@ def rewrite_resume(
         f"{context_str}"
         f"\nResume Bullets ({min(len(bullets), MAX_BULLETS)} total):\n"
         f"{bullets_text}\n\n"
-        f"{rewrite_instruction}\n"
-        'Return ONLY a valid JSON array with no markdown fences:\n'
-        '[{"original": "exact original text", "rewritten": "improved or unchanged text"}, ...]'
+        "Follow the system instructions to rewrite these bullets for maximum impact and JD alignment.\n"
+        'Return ONLY a valid JSON array:\n'
+        '[{"original": "exact original text", "rewritten": "improved bullet text"}, ...]'
     )
 
 
@@ -274,7 +256,7 @@ def rewrite_resume(
                 {"role": "system", "content": system_prompt},
                 {"role": "user",   "content": user_message}
             ],
-            temperature=0.25  # Low temperature = conservative, minimal hallucination
+            temperature=0.45  # Increased for more creative and impactful rewriting
         )
 
         response_text = response.choices[0].message.content
