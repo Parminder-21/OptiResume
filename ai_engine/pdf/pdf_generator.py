@@ -199,6 +199,14 @@ def _extract_name_and_contacts(lines: list[str]) -> tuple[str, list[str]]:
     return name, unique
 
 
+def _group_skills(items: list[str], cols: int = 3) -> list[list[str]]:
+    """Split skills list into rows for a table."""
+    rows = []
+    for i in range(0, len(items), cols):
+        rows.append(items[i:i+cols])
+    return rows
+
+
 def generate_pdf_reportlab(
     resume_text: str,
     output_path: str,
@@ -210,161 +218,128 @@ def generate_pdf_reportlab(
     doc = SimpleDocTemplate(
         output_path,
         pagesize=letter,
-        topMargin=0.5 * inch,
-        bottomMargin=0.55 * inch,
-        leftMargin=0.65 * inch,
-        rightMargin=0.65 * inch,
+        topMargin=0.4 * inch,
+        bottomMargin=0.4 * inch,
+        leftMargin=0.6 * inch,
+        rightMargin=0.6 * inch,
     )
     styles  = _build_styles()
     elements = []
 
     lines = [l.rstrip() for l in resume_text.split('\n')]
 
-    # ── 1. Extract name + contact info from top ──────────────────────────────
+    # ── 1. Extract name + contact info ───────────────────────────────────────
     detected_name, contacts = _extract_name_and_contacts(lines)
     display_name = detected_name if detected_name else candidate_name
 
     # ── 2. Name header ───────────────────────────────────────────────────────
     elements.append(Paragraph(_xml(display_name).upper(), styles['name']))
-    elements.append(HRFlowable(
-        width='100%', thickness=1.5, color=ACCENT,
-        spaceBefore=0, spaceAfter=4,
-    ))
+    elements.append(HRFlowable(width='100%', thickness=1.5, color=ACCENT, spaceBefore=0, spaceAfter=4))
 
     # ── 3. Contact line ──────────────────────────────────────────────────────
     if contacts:
-        contact_str = '  |  '.join(_xml(c) for c in contacts)
+        contact_str = '  &bull;  '.join(_xml(c) for c in contacts)
         elements.append(Paragraph(contact_str, styles['contact']))
     else:
         elements.append(Spacer(1, 6))
 
-    # ── 4. Determine where the body starts ───────────────────────────────────
+    # ── 4. Main Parsing Loop ─────────────────────────────────────────────────
     body_start_idx = 0
     for i, line in enumerate(lines[:12]):
         stripped = line.strip()
-        if not stripped:
-            continue
-        # Skip name line and contact lines
-        if stripped.lower() == display_name.lower() or _is_contact(stripped):
+        if stripped and (stripped.lower() == display_name.lower() or _is_contact(stripped)):
             body_start_idx = i + 1
-        else:
+        elif stripped:
             break
 
-    # ── 5. Parse body ─────────────────────────────────────────────────────────
-    pending_title  = None   # possible job title waiting for a date line
-    prev_section   = False
-    in_skills      = False
-
     body_lines = lines[body_start_idx:]
+    pending_title = None
+    in_skills = False
+    skill_buffer = []
+
     i = 0
     while i < len(body_lines):
-        raw  = body_lines[i]
+        raw = body_lines[i]
         line = raw.strip()
 
-        # Skip empty
         if not line:
-            if not prev_section:
-                elements.append(Spacer(1, 3))
-            prev_section = False
+            # If we were in skills, flush them
+            if in_skills and skill_buffer:
+                rows = _group_skills(skill_buffer)
+                tbl = Table(rows, colWidths=[2.2 * inch]*3)
+                tbl.setStyle(TableStyle([
+                    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 9),
+                    ('TEXTCOLOR', (0, 0), (-1, -1), DARK),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+                ]))
+                elements.append(tbl)
+                skill_buffer = []
+            elements.append(Spacer(1, 4))
             i += 1
             continue
 
-        # Skip stray contact lines in body
-        if _is_contact(line) and not in_skills:
-            i += 1
-            continue
-
-        # ── Section header ──────────────────────────────────────────────────
         if _is_section(line):
-            in_skills   = 'SKILL' in line.upper() or 'COMPETEN' in line.upper()
-            pending_title = None
-            elements.append(Spacer(1, 2))
+            # Flush skills if entering new section
+            if skill_buffer:
+                rows = _group_skills(skill_buffer)
+                tbl = Table(rows, colWidths=[2.2 * inch]*3)
+                elements.append(tbl)
+                skill_buffer = []
+
+            in_skills = 'SKILL' in line.upper() or 'COMPETEN' in line.upper()
+            elements.append(Spacer(1, 8))
             elements.append(Paragraph(_xml(line).upper(), styles['section']))
-            elements.append(HRFlowable(
-                width='100%', thickness=0.5, color=RULE_GREY,
-                spaceBefore=1, spaceAfter=4,
-            ))
-            prev_section = True
+            elements.append(HRFlowable(width='100%', thickness=0.5, color=RULE_GREY, spaceBefore=1, spaceAfter=4))
             i += 1
             continue
 
-        prev_section = False
+        # Handle Skills Grid
+        if in_skills:
+            # Try to split by commas or tabs
+            parts = [p.strip() for p in re.split(r'[,|•\t]', line) if p.strip()]
+            skill_buffer.extend([_xml(p) for p in parts])
+            i += 1
+            continue
 
-        # ── Bullet ─────────────────────────────────────────────────────────
+        # Handle Bullets
         if _is_bullet(line):
             pending_title = None
             text = _xml(_strip_bullet(line))
-            if text:
-                elements.append(Paragraph(f'&bull;&nbsp;&nbsp;{text}', styles['bullet']))
+            elements.append(Paragraph(f'&bull;&nbsp;&nbsp;{text}', styles['bullet']))
             i += 1
             continue
 
-        # ── Date line → render as right-aligned date next to pending title ─
-        if _is_date(line) and len(line) < 90:
-            if pending_title:
-                # Table: [job title] [date]
-                tbl = Table(
-                    [[
-                        Paragraph(_xml(pending_title), styles['job_title']),
-                        Paragraph(_xml(line),          styles['date']),
-                    ]],
-                    colWidths=[4.2 * inch, 2.3 * inch],
-                )
-                tbl.setStyle(TableStyle([
-                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                    ('LEFTPADDING',  (0, 0), (-1, -1), 0),
-                    ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-                    ('TOPPADDING',   (0, 0), (-1, -1), 2),
-                    ('BOTTOMPADDING',(0, 0), (-1, -1), 1),
-                ]))
-                elements.append(tbl)
-                pending_title = None
-            else:
-                elements.append(Paragraph(_xml(line), styles['company']))
-            i += 1
-            continue
-
-        # ── Skills section body ────────────────────────────────────────────
-        if in_skills:
+        # Handle Experience/Education Date Alignment
+        if _is_date(line) and len(line) < 60:
+            title_text = pending_title if pending_title else ""
+            tbl = Table([[Paragraph(_xml(title_text), styles['job_title'] if pending_title else styles['company']), 
+                           Paragraph(_xml(line), styles['date'])]], colWidths=[4.8*inch, 1.8*inch])
+            tbl.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'), ('LEFTPADDING',(0,0),(-1,-1),0)]))
+            elements.append(tbl)
             pending_title = None
-            elements.append(Paragraph(_xml(line), styles['skills']))
             i += 1
             continue
 
-        # ── ALL-CAPS short line → likely a job title or section subtext ───
-        if line.isupper() and 4 < len(line) < 70:
-            pending_title = None
-            elements.append(Paragraph(_xml(line), styles['job_title']))
-            i += 1
-            continue
-
-        # ── Look-ahead: if NEXT line has a date, this line is a job title ─
-        next_line = body_lines[i + 1].strip() if i + 1 < len(body_lines) else ''
-        if _is_date(next_line) and len(line) < 90 and not _is_bullet(line):
+        # Look ahead for dates
+        next_line = body_lines[i+1].strip() if i+1 < len(body_lines) else ""
+        if _is_date(next_line) and len(line) < 100:
             pending_title = line
             i += 1
             continue
 
-        # ── Generic body text ──────────────────────────────────────────────
-        pending_title = None
+        # General Text
         elements.append(Paragraph(_xml(line), styles['body']))
         i += 1
 
-    # Build PDF
+    # Final build
     doc.build(elements)
-    logger.info(f"PDF generated: {output_path}")
     return output_path
 
 
-def generate_pdf(
-    resume_text: str,
-    output_path: str,
-    candidate_name: str = "Candidate",
-) -> str:
-    """Entry point — always uses ReportLab (Render/Linux safe)."""
+def generate_pdf(resume_text: str, output_path: str, candidate_name: str = "Candidate") -> str:
     return generate_pdf_reportlab(resume_text, output_path, candidate_name)
 
-
 def generate_docx(resume_text: str, output_path: str, candidate_name: str = "Candidate") -> str:
-    """Kept for API compatibility — returns pdf path."""
     return output_path.replace('.pdf', '.docx')
