@@ -24,12 +24,10 @@ export default function ChatStep({ questions = [], loading = false, onContinue, 
   const currentAnswer = answers[current?.id] || { selected: [], custom: '' }
   const hasAnswer = currentAnswer.selected.length > 0 || currentAnswer.custom.trim()
 
-  // Toggle option chip
+  // Single-select option (radio behavior — click same to deselect)
   const toggleOption = (option) => {
     const prev = answers[current.id]?.selected || []
-    const next  = prev.includes(option)
-      ? prev.filter(o => o !== option)
-      : [...prev, option]
+    const next  = prev.includes(option) ? [] : [option]   // ← radio: only one at a time
     setAnswers(a => ({ ...a, [current.id]: { ...currentAnswer, selected: next } }))
   }
 

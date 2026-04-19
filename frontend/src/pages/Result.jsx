@@ -242,7 +242,7 @@ function DiffSection({ diff }) {
 
 // ── Main Result page ────────────────────────────────────────────────────────
 
-export default function Result({ results, onReset, resumeText }) {
+export default function Result({ results, onReset, onEdit, resumeText }) {
   const { user, logout } = useAuth()
   const [downloading, setDownloading] = useState(false)
   const [downloadErr, setDownloadErr] = useState(null)
@@ -294,6 +294,15 @@ export default function Result({ results, onReset, resumeText }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button className="btn-outline" onClick={onReset}>← Optimize Another</button>
+            {onEdit && (
+              <button
+                className="btn-outline"
+                onClick={onEdit}
+                style={{ borderColor: 'var(--accentbg2)', color: 'var(--accent)' }}
+              >
+                ✎ Edit & Re-optimize
+              </button>
+            )}
             <button className="btn-accent" onClick={handleDownload} disabled={downloading}>
               {downloading ? '⏳ Generating…' : '⬇ Download Resume'}
             </button>

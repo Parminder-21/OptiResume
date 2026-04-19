@@ -64,6 +64,21 @@ export default function App() {
   // ── Skip chatbot entirely ────────────────────────────────────────────────────
   const handleChatSkip = () => handleChatContinue(null)
 
+  // ── Edit — go back to chat with existing resume/JD (user adjusts answers) ──
+  const handleEdit = async () => {
+    setStep('chat')
+    setChatLoading(true)
+    setQuestions([])
+    try {
+      const data = await getChatQuestions(resumeText, jobDesc)
+      setQuestions(data.questions || [])
+    } catch {
+      setQuestions([])
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
   const handleReset = () => {
     setStep('upload')
     setResults(null)
@@ -111,7 +126,7 @@ export default function App() {
 
       {step === 'results' && (
         <motion.div key="results" variants={fade} initial="initial" animate="enter" exit="exit">
-          <Result results={results} onReset={handleReset} resumeText={resumeText} />
+          <Result results={results} onReset={handleReset} onEdit={handleEdit} resumeText={resumeText} />
         </motion.div>
       )}
     </AnimatePresence>
