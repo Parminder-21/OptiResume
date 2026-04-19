@@ -183,34 +183,43 @@ def rewrite_resume(
         bullets = extract_bullets(resume_text)
         return resume_text, [{"original": b, "rewritten": b} for b in bullets]
 
-    # ── Domain Compatibility Gate ──────────────────────────────────────────
-    # Compute keyword overlap between resume and JD BEFORE calling Groq.
-    # If the resume is from a completely different domain, skip rewriting.
+    # ── Domain Compatibility Gate (3-tier) ────────────────────────────────────
+    # Tier 1: < 8%  → totally unrelated, skip rewriting entirely
+    # Tier 2: 8-20% → partial match, improve language/verbs only (no domain keywords)
+    # Tier 3: > 20% → full optimization with JD keywords injected
     overlap_score = compute_keyword_overlap(resume_text, job_description)
     logger.info(f"[DOMAIN CHECK] Keyword overlap score: {overlap_score:.1f}%")
 
-    OVERLAP_THRESHOLD = 15.0  # Below 15% = different domain, skip rewriting
-    if overlap_score < OVERLAP_THRESHOLD:
+    HARD_SKIP_THRESHOLD   = 8.0   # Completely unrelated
+    PARTIAL_MODE_THRESHOLD = 20.0  # Low but some common ground
+
+    if overlap_score < HARD_SKIP_THRESHOLD:
         logger.warning(
-            f"[DOMAIN CHECK] ⚠️ Resume-JD overlap is only {overlap_score:.1f}% "
-            f"(threshold: {OVERLAP_THRESHOLD}%). "
-            "Domains appear mismatched — skipping AI rewriting to avoid fabrication."
+            f"[DOMAIN CHECK] ⚠️ Only {overlap_score:.1f}% overlap — domains are unrelated. "
+            "Skipping rewriting to avoid fabrication."
         )
         bullets = extract_bullets(resume_text)
         if not bullets and len(resume_text) > 100:
             bullets = [p.strip() for p in resume_text.split('\n\n') if 30 < len(p.strip()) < 500][:12]
-        # Return original text unchanged, diff shows everything as "unchanged"
         return resume_text, [{"original": b, "rewritten": b} for b in bullets]
+
+    partial_mode = overlap_score < PARTIAL_MODE_THRESHOLD
+    if partial_mode:
+        logger.info(
+            f"[DOMAIN CHECK] ℹ️ {overlap_score:.1f}% overlap — partial match. "
+            "Using basic language improvement mode (no domain keyword injection)."
+        )
 
     # Extract bullets from resume
     bullets = extract_bullets(resume_text)
-    
+
     # If extract_bullets fails, treat paragraphs as bullets
     if not bullets and len(resume_text) > 100:
         logger.warning("⚠️ No formatted bullets found. Splitting by double-newlines as fallback.")
         bullets = [p.strip() for p in resume_text.split('\n\n') if 30 < len(p.strip()) < 500][:12]
-    
+
     logger.info(f"[EXTRACT] Found {len(bullets)} bullets for optimization")
+
 
     if not bullets:
         logger.warning("[EXTRACT] No bullets found - returning unchanged")
@@ -222,9 +231,10 @@ def rewrite_resume(
     # Build user message — send bullets as a numbered list for clarity
     MAX_BULLETS = 12  # Cap at 12 to avoid over-optimization
     bullets_text = "\n".join(f"{i+1}. {b}" for i, b in enumerate(bullets[:MAX_BULLETS]))
-    
+
+    # In partial mode: don't inject JD-specific keywords (different domain)
     keywords_str = ""
-    if target_keywords:
+    if target_keywords and not partial_mode:
         keywords_str = f"\nKey JD keywords (incorporate selectively where natural):\n{', '.join(target_keywords[:15])}\n"
 
     # Inject user context from chatbot answers (if provided)
@@ -236,19 +246,36 @@ def rewrite_resume(
             "Use this context to enrich bullet points where applicable (without fabricating)."
         )
 
+    if partial_mode:
+        # Partial mode: improve language quality only — no domain keyword stuffing
+        rewrite_instruction = (
+            "The resume and job description are from related but different areas. "
+            "DO NOT inject domain-specific keywords from the JD. "
+            "Instead, ONLY improve bullets that use weak/vague language: "
+            "replace passive verbs with strong action verbs, remove filler words, "
+            "make achievements clearer. If a bullet is already strong, return it UNCHANGED. "
+            "Leave at least 50% of bullets exactly as-is."
+        )
+    else:
+        # Full mode: selective keyword optimization
+        rewrite_instruction = (
+            "Review each bullet carefully. ONLY rewrite bullets that are vague, weak, or missing key JD terms. "
+            "Strong bullets that already have action verbs and keywords should be returned UNCHANGED. "
+            "Where relevant, incorporate the additional candidate context provided above. "
+            "Aim to leave at least 40% of bullets exactly as-is."
+        )
+
     user_message = (
         f"Job Description:\n{job_description[:2500]}\n"
         f"{keywords_str}"
         f"{context_str}"
         f"\nResume Bullets ({min(len(bullets), MAX_BULLETS)} total):\n"
         f"{bullets_text}\n\n"
-        "Review each bullet carefully. ONLY rewrite bullets that are vague, weak, or missing key JD terms. "
-        "Strong bullets that already have action verbs and keywords should be returned UNCHANGED. "
-        "Where relevant, incorporate the additional candidate context provided above. "
-        "Aim to leave at least 40% of bullets exactly as-is.\n"
-        "Return ONLY a valid JSON array with no markdown fences:\n"
+        f"{rewrite_instruction}\n"
+        'Return ONLY a valid JSON array with no markdown fences:\n'
         '[{"original": "exact original text", "rewritten": "improved or unchanged text"}, ...]'
     )
+
 
     try:
         logger.info(f"[GROQ] Calling Groq API with {settings.MODEL_NAME}...")
