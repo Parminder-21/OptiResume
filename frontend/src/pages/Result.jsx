@@ -338,11 +338,6 @@ export default function Result({ results, onReset, onEdit, resumeText }) {
               {changedCount} bullet{changedCount !== 1 ? 's' : ''} rewritten ·{' '}
               {skill_gaps.length} skill gap{skill_gaps.length !== 1 ? 's' : ''} identified ·{' '}
               {Math.round(scores.initial.overall)}% → {Math.round(scores.optimized.overall)}% overall match
-              {changedCount === 0 && (
-                <span style={{ display: 'block', marginTop: '4px', color: 'var(--amber)', fontWeight: 500 }}>
-                  💡 Tip: The current resume already seems well-aligned or from a different domain. Try adding more project details via 'Edit & Re-optimize' for better results.
-                </span>
-              )}
             </p>
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px' }}>

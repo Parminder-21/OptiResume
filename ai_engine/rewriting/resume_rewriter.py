@@ -13,7 +13,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from groq import Groq
 from app.core.config import settings
 from app.core.utils import extract_bullets
-from ai_engine.embedding.semantic_match import compute_keyword_overlap
 
 logger = logging.getLogger(__name__)
 
@@ -183,22 +182,6 @@ def rewrite_resume(
         bullets = extract_bullets(resume_text)
         return resume_text, [{"original": b, "rewritten": b} for b in bullets]
 
-    # ── Domain Compatibility Gate (Aggressive Mode) ──────────────────────────
-    # Tier 1: Always attempt rewriting (threshold = 0)
-    # Tier 2: < 12% → partial match, improve language/verbs only
-    # Tier 3: > 12% → full optimization with JD keywords
-    overlap_score = compute_keyword_overlap(resume_text, job_description)
-    logger.info(f"[DOMAIN CHECK] Keyword overlap score: {overlap_score:.1f}%")
-
-    PARTIAL_MODE_THRESHOLD = 12.0  # Even at low overlap, try full optimization if > 12%
-
-    partial_mode = overlap_score < PARTIAL_MODE_THRESHOLD
-    if partial_mode:
-        logger.info(
-            f"[DOMAIN CHECK] ℹ️ {overlap_score:.1f}% overlap — partial match. "
-            "Using language improvement mode."
-        )
-
     # Extract bullets from resume
     bullets = extract_bullets(resume_text)
 
@@ -209,7 +192,6 @@ def rewrite_resume(
 
     logger.info(f"[EXTRACT] Found {len(bullets)} bullets for optimization")
 
-
     if not bullets:
         logger.warning("[EXTRACT] No bullets found - returning unchanged")
         return resume_text, []
@@ -218,13 +200,14 @@ def rewrite_resume(
     system_prompt = load_rewrite_prompt()
 
     # Build user message — send bullets as a numbered list for clarity
-    MAX_BULLETS = 12  # Cap at 12 to avoid over-optimization
+    MAX_BULLETS = 12
     bullets_text = "\n".join(f"{i+1}. {b}" for i, b in enumerate(bullets[:MAX_BULLETS]))
 
-    # In partial mode: don't inject JD-specific keywords to stay safe, but still rewrite aggressively
+    # Always inject JD keywords — no domain gating
     keywords_str = ""
-    if target_keywords and not partial_mode:
-        keywords_str = f"\nKey JD keywords (incorporate selectively where natural):\n{', '.join(target_keywords[:15])}\n"
+    if target_keywords:
+        keywords_str = f"\nKey JD keywords to incorporate naturally:\n{', '.join(target_keywords[:15])}\n"
+
 
     # Inject user context from chatbot answers (if provided)
     context_str = ""
