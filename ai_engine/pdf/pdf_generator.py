@@ -4,7 +4,14 @@ from datetime import datetime
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx2pdf import convert
+# Optional import: docx2pdf only works on Windows/Mac with MS Word installed
+try:
+    from docx2pdf import convert as _docx2pdf_convert
+    DOCX2PDF_AVAILABLE = True
+except ImportError:
+    DOCX2PDF_AVAILABLE = False
+    logger_temp = __import__('logging').getLogger(__name__)
+    logger_temp.info("docx2pdf not available (Linux/Render) — will use ReportLab fallback")
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -109,12 +116,13 @@ def generate_pdf(resume_text: str, output_path: str, candidate_name: str = "Cand
         logger.error(f"DOCX Creation error: {e}")
 
     # 2. Attempt Word -> PDF conversion (Only works on Windows/Mac with Word installed)
-    try:
-        convert(docx_path, output_path)
-        if os.path.exists(output_path):
-            return output_path
-    except Exception as e:
-        logger.warning(f"⚠️ docx2pdf failed: {e}. Falling back to ReportLab...")
+    if DOCX2PDF_AVAILABLE:
+        try:
+            _docx2pdf_convert(docx_path, output_path)
+            if os.path.exists(output_path):
+                return output_path
+        except Exception as e:
+            logger.warning(f"⚠️ docx2pdf failed: {e}. Falling back to ReportLab...")
 
     # 3. Final Fallback: Generate PDF using ReportLab (Ensures a PDF is ALWAYS returned)
     return generate_pdf_reportlab(resume_text, output_path, candidate_name)
