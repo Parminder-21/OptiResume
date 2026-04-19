@@ -183,31 +183,20 @@ def rewrite_resume(
         bullets = extract_bullets(resume_text)
         return resume_text, [{"original": b, "rewritten": b} for b in bullets]
 
-    # ── Domain Compatibility Gate (3-tier) ────────────────────────────────────
-    # Tier 1: < 8%  → totally unrelated, skip rewriting entirely
-    # Tier 2: 8-20% → partial match, improve language/verbs only (no domain keywords)
-    # Tier 3: > 20% → full optimization with JD keywords injected
+    # ── Domain Compatibility Gate (Aggressive Mode) ──────────────────────────
+    # Tier 1: Always attempt rewriting (threshold = 0)
+    # Tier 2: < 12% → partial match, improve language/verbs only
+    # Tier 3: > 12% → full optimization with JD keywords
     overlap_score = compute_keyword_overlap(resume_text, job_description)
     logger.info(f"[DOMAIN CHECK] Keyword overlap score: {overlap_score:.1f}%")
 
-    HARD_SKIP_THRESHOLD   = 8.0   # Completely unrelated
-    PARTIAL_MODE_THRESHOLD = 20.0  # Low but some common ground
-
-    if overlap_score < HARD_SKIP_THRESHOLD:
-        logger.warning(
-            f"[DOMAIN CHECK] ⚠️ Only {overlap_score:.1f}% overlap — domains are unrelated. "
-            "Skipping rewriting to avoid fabrication."
-        )
-        bullets = extract_bullets(resume_text)
-        if not bullets and len(resume_text) > 100:
-            bullets = [p.strip() for p in resume_text.split('\n\n') if 30 < len(p.strip()) < 500][:12]
-        return resume_text, [{"original": b, "rewritten": b} for b in bullets]
+    PARTIAL_MODE_THRESHOLD = 12.0  # Even at low overlap, try full optimization if > 12%
 
     partial_mode = overlap_score < PARTIAL_MODE_THRESHOLD
     if partial_mode:
         logger.info(
             f"[DOMAIN CHECK] ℹ️ {overlap_score:.1f}% overlap — partial match. "
-            "Using basic language improvement mode (no domain keyword injection)."
+            "Using language improvement mode."
         )
 
     # Extract bullets from resume
@@ -247,22 +236,21 @@ def rewrite_resume(
         )
 
     if partial_mode:
-        # Partial mode: improve language quality only — no domain keyword stuffing
+        # Partial mode: still try to improve as much as possible, just be careful with fabrication
         rewrite_instruction = (
-            "The resume and job description are from related but different areas. "
-            "DO NOT inject domain-specific keywords from the JD. "
-            "Instead, ONLY improve bullets that use weak/vague language: "
-            "replace passive verbs with strong action verbs, remove filler words, "
-            "make achievements clearer. If a bullet is already strong, return it UNCHANGED. "
-            "Leave at least 50% of bullets exactly as-is."
+            "The resume and job description have low overlap but some common ground. "
+            "Focus on improving the professional impact of each bullet point. "
+            "Use strong action verbs, remove passive voice, and clarify achievements. "
+            "If you can find valid ways to align the language with the job description without fabricating new skills, do so. "
+            "Rewrite at least 60% of the provided bullets to significantly improve their quality."
         )
     else:
         # Full mode: selective keyword optimization
         rewrite_instruction = (
-            "Review each bullet carefully. ONLY rewrite bullets that are vague, weak, or missing key JD terms. "
-            "Strong bullets that already have action verbs and keywords should be returned UNCHANGED. "
-            "Where relevant, incorporate the additional candidate context provided above. "
-            "Aim to leave at least 40% of bullets exactly as-is."
+            "Review each bullet carefully. Rewrite bullets to incorporate missing JD keywords and align with target requirements. "
+            "Use the provided candidate context to add specific details/metrics. "
+            "Ensure the final output sounds professional and highly relevant to the JD. "
+            "Rewrite at least 70% of the bullets for maximum impact."
         )
 
     user_message = (

@@ -340,7 +340,7 @@ export default function Result({ results, onReset, onEdit, resumeText }) {
               {Math.round(scores.initial.overall)}% → {Math.round(scores.optimized.overall)}% overall match
               {changedCount === 0 && (
                 <span style={{ display: 'block', marginTop: '4px', color: 'var(--amber)', fontWeight: 500 }}>
-                  ⚠️ Resume and job description seem to be from different domains — rewriting skipped to avoid fabrication.
+                  💡 Tip: The current resume already seems well-aligned or from a different domain. Try adding more project details via 'Edit & Re-optimize' for better results.
                 </span>
               )}
             </p>
