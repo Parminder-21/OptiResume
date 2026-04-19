@@ -323,7 +323,7 @@ export default function Result({ results, onReset, onEdit, resumeText }) {
             width: '46px', height: '46px', borderRadius: '12px',
             background: '#D1FAE5', border: '1px solid #86EFAC',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0,
-          </div>
+          }}>🎯</div>
           <div>
             <h3 style={{ fontFamily: 'Sora,sans-serif', fontSize: '17px', fontWeight: 700,
               color: improvement > 0 ? 'var(--green)' : improvement < 0 ? 'var(--red)' : 'var(--amber)',
