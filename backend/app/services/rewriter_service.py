@@ -12,7 +12,8 @@ def rewrite_and_diff(
     resume_text: str,
     job_description: str,
     model,
-    target_keywords: list[str] = None
+    target_keywords: list[str] = None,
+    user_context: str = None,
 ) -> tuple[str, list[DiffItem]]:
     """
     Rewrite resume bullets using LLM and return:
@@ -21,7 +22,11 @@ def rewrite_and_diff(
 
     Also validates rewrites using semantic similarity (anti-hallucination).
     """
-    optimized_text, raw_diff = rewrite_resume(resume_text, job_description, model, target_keywords=target_keywords)
+    optimized_text, raw_diff = rewrite_resume(
+        resume_text, job_description, model,
+        target_keywords=target_keywords,
+        user_context=user_context,
+    )
 
     diff_items: list[DiffItem] = []
     for item in raw_diff:

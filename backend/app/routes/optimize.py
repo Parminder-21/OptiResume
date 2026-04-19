@@ -58,14 +58,18 @@ async def optimize_resume(
 
         # ── Step 3: Rewrite resume with LLM ───────────────────────────────────
         logger.info("3️⃣ Rewriting resume with AI (Groq LLM)...")
-        # Pass missing keywords for targeted optimization
-        target_keywords = initial_scores.missing_keywords[:15] # Focus on top 15
-        
+        target_keywords = initial_scores.missing_keywords[:15]
+
+        # Log if user context was provided from chatbot
+        if data.user_context:
+            logger.info(f"📝 User context from chatbot ({len(data.user_context)} chars) will enrich rewriting")
+
         optimized_text, diff_items = rewriter_service.rewrite_and_diff(
             data.resume_text,
             data.job_description,
             model,
-            target_keywords=target_keywords
+            target_keywords=target_keywords,
+            user_context=data.user_context,
         )
         logger.info(f"✅ Rewriting complete. {len(diff_items)} diffs generated")
         logger.info(f"   Original length: {len(data.resume_text)} chars → Optimized: {len(optimized_text)} chars")

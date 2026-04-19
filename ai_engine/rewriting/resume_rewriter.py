@@ -138,7 +138,13 @@ def _replace_bullet_in_text(full_text: str, original_bullet: str, rewritten_bull
     return full_text, False
 
 
-def rewrite_resume(resume_text: str, job_description: str, model, target_keywords: list[str] = None) -> tuple[str, list[dict]]:
+def rewrite_resume(
+    resume_text: str,
+    job_description: str,
+    model,
+    target_keywords: list[str] = None,
+    user_context: str = None,
+) -> tuple[str, list[dict]]:
     """
     Rewrite resume bullets using Groq API to match job description.
 
@@ -147,6 +153,7 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
         job_description: Target job description
         model: SBERT model (unused but kept for interface compatibility)
         target_keywords: Optional list of top keywords to prioritize
+        user_context: Answers from pre-optimization chatbot to enrich rewriting
 
     Returns:
         Tuple of (optimized_full_text, list_of_diffs)
@@ -220,13 +227,24 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
     if target_keywords:
         keywords_str = f"\nKey JD keywords (incorporate selectively where natural):\n{', '.join(target_keywords[:15])}\n"
 
+    # Inject user context from chatbot answers (if provided)
+    context_str = ""
+    if user_context and user_context.strip():
+        context_str = (
+            f"\n\nADDITIONAL CONTEXT FROM THE CANDIDATE:\n"
+            f"{user_context.strip()[:1000]}\n"
+            "Use this context to enrich bullet points where applicable (without fabricating)."
+        )
+
     user_message = (
         f"Job Description:\n{job_description[:2500]}\n"
         f"{keywords_str}"
+        f"{context_str}"
         f"\nResume Bullets ({min(len(bullets), MAX_BULLETS)} total):\n"
         f"{bullets_text}\n\n"
         "Review each bullet carefully. ONLY rewrite bullets that are vague, weak, or missing key JD terms. "
         "Strong bullets that already have action verbs and keywords should be returned UNCHANGED. "
+        "Where relevant, incorporate the additional candidate context provided above. "
         "Aim to leave at least 40% of bullets exactly as-is.\n"
         "Return ONLY a valid JSON array with no markdown fences:\n"
         '[{"original": "exact original text", "rewritten": "improved or unchanged text"}, ...]'

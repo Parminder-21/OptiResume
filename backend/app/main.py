@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 # Allow ai_engine imports from project root
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from app.routes import upload, optimize, download, auth
+from app.routes import upload, optimize, download, auth, chat
 from app.core.config import settings
 from app.db.session import engine, Base
 import app.models.user # Ensure models are loaded for create_all
@@ -86,6 +86,7 @@ app.include_router(upload.router,   prefix="/api/v1", tags=["Upload"])
 app.include_router(optimize.router, prefix="/api/v1", tags=["Optimize"])
 app.include_router(download.router, prefix="/api/v1", tags=["Download"])
 app.include_router(auth.router,     prefix="/api/v1", tags=["Auth"])
+app.include_router(chat.router,     prefix="/api/v1", tags=["Chat"])
 
 
 # ─── Health Check ─────────────────────────────────────────────────────────────

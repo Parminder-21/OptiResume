@@ -24,29 +24,36 @@ export const uploadResume = async (file) => {
   return res.data
 }
 
+// ─── Chat Questions ───────────────────────────────────────────────────────────
+
+/**
+ * Fetch pre-optimization questions from the AI chatbot step.
+ * @param {string} resumeText      - Extracted or pasted resume text
+ * @param {string} jobDescription  - Pasted job description
+ * @returns {Promise<{ questions: [{id, question, hint}] }>}
+ */
+export const getChatQuestions = async (resumeText, jobDescription) => {
+  const res = await api.post('/chat/questions', {
+    resume_text:     resumeText,
+    job_description: jobDescription,
+  })
+  return res.data
+}
+
 // ─── Optimize ─────────────────────────────────────────────────────────────────
 
 /**
  * Run the full optimization pipeline.
  * @param {string} resumeText      - Extracted or pasted resume text
  * @param {string} jobDescription  - Pasted job description
+ * @param {string} [userContext]   - Optional bundled answers from chatbot step
  * @returns {Promise<OptimizeResponse>}
- *
- * OptimizeResponse shape:
- * {
- *   scores: {
- *     initial:   { overall, skills_match, experience_match, keyword_coverage, formatting },
- *     optimized: { overall, skills_match, experience_match, keyword_coverage, formatting }
- *   },
- *   skill_gaps:       [{ skill, priority }],
- *   optimized_resume: string,
- *   diff:             [{ original, optimized, changed }]
- * }
  */
-export const optimizeResume = async (resumeText, jobDescription) => {
+export const optimizeResume = async (resumeText, jobDescription, userContext = null) => {
   const res = await api.post('/optimize', {
     resume_text:     resumeText,
     job_description: jobDescription,
+    ...(userContext ? { user_context: userContext } : {}),
   })
   return res.data
 }

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Home    from './pages/home.jsx'
-import Result  from './pages/Result.jsx'
-import Loader  from './components/Loader.jsx'
+import Home     from './pages/home.jsx'
+import Result   from './pages/Result.jsx'
+import Loader   from './components/Loader.jsx'
+import ChatStep from './components/ChatStep.jsx'
 import AuthPage from './pages/AuthPage.jsx'
-import { optimizeResume } from './services/api.js'
+import { getChatQuestions, optimizeResume } from './services/api.js'
 import { useAuth } from './context/AuthContext.jsx'
 
 const fade = {
@@ -15,19 +16,42 @@ const fade = {
 
 export default function App() {
   const { user } = useAuth()
-  const [step,       setStep]       = useState('upload')
-  const [resumeText, setResumeText] = useState('')
-  const [jobDesc,    setJobDesc]    = useState('')
-  const [results,    setResults]    = useState(null)
-  const [error,      setError]      = useState(null)
 
+  const [step,        setStep]        = useState('upload')  // upload | chat | loading | results
+  const [resumeText,  setResumeText]  = useState('')
+  const [jobDesc,     setJobDesc]     = useState('')
+  const [questions,   setQuestions]   = useState([])
+  const [chatLoading, setChatLoading] = useState(false)
+  const [results,     setResults]     = useState(null)
+  const [error,       setError]       = useState(null)
+
+  // ── Called from Home when user clicks "Optimize My Resume" ─────────────────
   const handleOptimize = async (text, jd) => {
     setResumeText(text)
     setJobDesc(jd)
     setError(null)
+
+    // Move to chat step and start fetching questions in parallel
+    setStep('chat')
+    setChatLoading(true)
+    setQuestions([])
+
+    try {
+      const data = await getChatQuestions(text, jd)
+      setQuestions(data.questions || [])
+    } catch (err) {
+      console.warn('Chat questions failed, will skip:', err)
+      setQuestions([])
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
+  // ── Called from ChatStep when user clicks "Optimize" (with or without answers)
+  const handleChatContinue = async (userContext) => {
     setStep('loading')
     try {
-      const data = await optimizeResume(text, jd)
+      const data = await optimizeResume(resumeText, jobDesc, userContext || null)
       setResults(data)
       setStep('results')
     } catch (err) {
@@ -37,14 +61,19 @@ export default function App() {
     }
   }
 
+  // ── Skip chatbot entirely ────────────────────────────────────────────────────
+  const handleChatSkip = () => handleChatContinue(null)
+
   const handleReset = () => {
     setStep('upload')
     setResults(null)
     setError(null)
     setResumeText('')
     setJobDesc('')
+    setQuestions([])
   }
 
+  // ── Auth gate ────────────────────────────────────────────────────────────────
   if (!user) {
     return (
       <AnimatePresence mode="wait">
@@ -62,11 +91,24 @@ export default function App() {
           <Home onOptimize={handleOptimize} error={error} />
         </motion.div>
       )}
+
+      {step === 'chat' && (
+        <motion.div key="chat" variants={fade} initial="initial" animate="enter" exit="exit">
+          <ChatStep
+            questions={questions}
+            loading={chatLoading}
+            onContinue={handleChatContinue}
+            onSkip={handleChatSkip}
+          />
+        </motion.div>
+      )}
+
       {step === 'loading' && (
         <motion.div key="loading" variants={fade} initial="initial" animate="enter" exit="exit">
           <Loader />
         </motion.div>
       )}
+
       {step === 'results' && (
         <motion.div key="results" variants={fade} initial="initial" animate="enter" exit="exit">
           <Result results={results} onReset={handleReset} resumeText={resumeText} />

@@ -7,6 +7,7 @@ from typing import Literal, Optional
 class OptimizeRequest(BaseModel):
     resume_text: str
     job_description: str
+    user_context: Optional[str] = None  # Answers from pre-optimization chatbot
 
     @field_validator('resume_text', 'job_description')
     @classmethod
