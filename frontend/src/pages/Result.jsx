@@ -9,9 +9,9 @@ import { countChanges } from '../utils/helpers.js'
 
 function ScoreSection({ scores }) {
   const bars = [
-    { name: '🎯 Skills match',    before: scores.initial.keywords,   after: scores.optimized.keywords,   cls: 'green'  },
-    { name: '💼 Experience match', before: scores.initial.experience, after: scores.optimized.experience, cls: 'amber'  },
-    { name: '🔑 Keyword coverage', before: scores.initial.overall,    after: scores.optimized.overall,    cls: 'accent' },
+    { name: '🎯 Skills match',    before: scores.initial.skills_match,      after: scores.optimized.skills_match,      cls: 'green'  },
+    { name: '💼 Experience match', before: scores.initial.experience_match,  after: scores.optimized.experience_match,  cls: 'amber'  },
+    { name: '🔑 Keyword coverage', before: scores.initial.keyword_coverage,  after: scores.optimized.keyword_coverage,  cls: 'accent' },
   ]
   const [visible, setVisible] = useState(false)
   const ref = useRef()
@@ -325,13 +325,21 @@ export default function Result({ results, onReset, onEdit, resumeText }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0,
           }}>🎯</div>
           <div>
-            <h3 style={{ fontFamily: 'Sora,sans-serif', fontSize: '17px', fontWeight: 700, color: 'var(--green)', letterSpacing: '-0.02em' }}>
-              ATS Score improved by +{improvement} points
+            <h3 style={{ fontFamily: 'Sora,sans-serif', fontSize: '17px', fontWeight: 700,
+              color: improvement > 0 ? 'var(--green)' : 'var(--amber)', letterSpacing: '-0.02em' }}>
+              {improvement > 0
+                ? `ATS Score improved by +${improvement} points`
+                : 'Resume analyzed — no rewriting applied'}
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--text2)', marginTop: '2px' }}>
               {changedCount} bullet{changedCount !== 1 ? 's' : ''} rewritten ·{' '}
               {skill_gaps.length} skill gap{skill_gaps.length !== 1 ? 's' : ''} identified ·{' '}
               {Math.round(scores.initial.overall)}% → {Math.round(scores.optimized.overall)}% overall match
+              {changedCount === 0 && (
+                <span style={{ display: 'block', marginTop: '4px', color: 'var(--amber)', fontWeight: 500 }}>
+                  ⚠️ Resume and job description seem to be from different domains — rewriting skipped to avoid fabrication.
+                </span>
+              )}
             </p>
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px' }}>
