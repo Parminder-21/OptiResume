@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request, Depends
 from app.models.request_models import OptimizeRequest, OptimizeResponse, ScorePair
 from app.services import scoring_service, skill_gap_service, rewriter_service
+from app.core.utils import validate_resume_quality
 import logging
 
 router  = APIRouter()
@@ -20,6 +21,7 @@ async def optimize_resume(
     Core pipeline endpoint.
 
     Steps:
+        0. Validate content quality
         1. Score original resume vs JD
         2. Detect skill gaps
         3. Rewrite bullets with LLM (Groq)
@@ -27,6 +29,9 @@ async def optimize_resume(
         5. Build diff
         6. Return full response
     """
+    # NEW: Validate pasted content quality
+    validate_resume_quality(data.resume_text)
+    
     model = request.app.state.sbert_model
     
     logger.info(f"📋 Starting optimization pipeline")

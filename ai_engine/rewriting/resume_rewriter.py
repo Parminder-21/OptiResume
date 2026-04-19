@@ -162,7 +162,14 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
 
     # Initialize Groq client
     try:
-        client = Groq(api_key=api_key)
+        import httpx
+        # STRATEGY: Explicitly passing an httpx.Client with proxies={} 
+        # stops the library from trying to auto-detect and pass 'proxies'
+        # which causes the crash on Render.
+        client = Groq(
+            api_key=api_key,
+            http_client=httpx.Client(proxies={})
+        )
     except Exception as e:
         logger.error(f"❌ Failed to initialize Groq client: {e}")
         bullets = extract_bullets(resume_text)
@@ -170,7 +177,13 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
 
     # Extract bullets from resume
     bullets = extract_bullets(resume_text)
-    logger.info(f"[EXTRACT] Found {len(bullets)} bullets from resume")
+    
+    # NEW: If extract_bullets still fails, treat paragraphs as bullets so AI always runs
+    if not bullets and len(resume_text) > 100:
+        logger.warning("⚠️ No formatted bullets found. Splitting by double-newlines as fallback.")
+        bullets = [p.strip() for p in resume_text.split('\n\n') if 30 < len(p.strip()) < 500][:15]
+    
+    logger.info(f"[EXTRACT] Found {len(bullets)} bullets for optimization")
 
     if not bullets:
         logger.warning("[EXTRACT] No bullets found - returning unchanged")

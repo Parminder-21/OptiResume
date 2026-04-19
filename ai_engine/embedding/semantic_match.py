@@ -1,4 +1,6 @@
+import re
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 def compute_similarity(text_a: str, text_b: str, model=None) -> float:
     """
