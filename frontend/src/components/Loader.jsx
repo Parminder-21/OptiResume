@@ -14,7 +14,6 @@ export default function Loader() {
     const advance = () => {
       if (stepIndex >= PROCESSING_STEPS.length - 1) return
       const step = PROCESSING_STEPS[stepIndex]
-
       setTimeout(() => {
         stepIndex++
         elapsed += step.duration
@@ -23,65 +22,94 @@ export default function Loader() {
         advance()
       }, step.duration)
     }
-
     advance()
 
-    // Smooth progress bar — runs independently
     const progressInterval = setInterval(() => {
-      setProgress(prev => Math.min(prev + 0.4, 95))
+      setProgress(prev => Math.min(prev + 0.5, 95))
     }, 80)
 
     return () => clearInterval(progressInterval)
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      {/* Animated background orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1.5s' }} />
-      </div>
-
-      <div className="relative z-10 w-full max-w-md text-center">
-        {/* Spinning logo */}
-        <div className="relative mx-auto mb-10 w-24 h-24">
-          <div className="absolute inset-0 rounded-full border-2 border-brand-500/30 animate-spin" style={{ animationDuration: '3s' }} />
-          <div className="absolute inset-2 rounded-full border-2 border-t-brand-500 border-r-transparent border-b-transparent border-l-transparent animate-spin" style={{ animationDuration: '1.2s' }} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-3xl">⚡</span>
+    <div style={{
+      minHeight: 'calc(100vh - 60px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '40px 2rem', background: 'var(--bg)',
+    }}>
+      {/* Nav */}
+      <nav className="or-nav" style={{ position: 'fixed', top: 0, left: 0, right: 0 }}>
+        <div className="or-nav-inner">
+          <div className="or-logo">
+            <div className="or-logo-mark">OR</div>
+            <span className="or-logo-text">Opti<span>Resume</span></span>
           </div>
         </div>
+      </nav>
 
-        <h2 className="text-2xl font-bold text-[var(--text-pri)] mb-2">Optimizing Your Resume</h2>
-        <p className="text-[var(--text-sec)] mb-10 text-sm">AI is analyzing and rewriting for maximum ATS impact</p>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        style={{
+          background: 'var(--bg2)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-xl)', padding: '52px 60px',
+          width: '100%', maxWidth: '520px', textAlign: 'center',
+          boxShadow: 'var(--shadow-lg)', marginTop: '60px',
+        }}
+      >
+        {/* Spinner */}
+        <div style={{ width: '80px', height: '80px', margin: '0 auto 28px', position: 'relative' }}>
+          <div className="loading-ring" style={{ position: 'absolute', inset: 0 }} />
+          <div className="loading-ring2" />
+        </div>
 
-        {/* Progress bar */}
-        <div className="score-bar-track mb-3">
+        <h2 style={{
+          fontFamily: 'Sora,sans-serif', fontSize: '22px', fontWeight: 700,
+          color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: '8px',
+        }}>
+          Optimizing your resume
+        </h2>
+        <p style={{ fontSize: '14px', color: 'var(--text2)', marginBottom: '28px' }}>
+          AI is analyzing and rewriting for maximum ATS impact
+        </p>
+
+        {/* Progress */}
+        <div className="progress-track" style={{ marginBottom: '6px' }}>
           <motion.div
-            className="h-full bg-gradient-to-r from-brand-500 to-purple-500 rounded-full"
+            className="progress-bar"
             initial={{ width: '0%' }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
           />
         </div>
-        <p className="text-right text-xs text-[var(--text-sec)] mb-8">{Math.round(progress)}%</p>
+        <p style={{ fontSize: '11px', color: 'var(--text3)', textAlign: 'right', marginBottom: '24px' }}>
+          {Math.round(progress)}%
+        </p>
 
-        {/* Step messages */}
-        <div className="glass-card p-4 text-left space-y-2">
+        {/* Steps */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
           {PROCESSING_STEPS.map((step, i) => (
             <AnimatePresence key={i}>
               {i <= currentStep && (
                 <motion.div
-                  initial={{ opacity: 0, x: -10 }}
+                  initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-3 text-sm"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    fontSize: '13px',
+                    color: i < currentStep ? 'var(--green)' : i === currentStep ? 'var(--text)' : 'var(--text3)',
+                  }}
                 >
-                  {i < currentStep ? (
-                    <span className="text-green-500 text-base">✓</span>
-                  ) : (
-                    <span className="w-4 h-4 border-2 border-brand-400 border-t-transparent rounded-full animate-spin inline-block flex-shrink-0" />
-                  )}
-                  <span className={i < currentStep ? 'text-[var(--text-sec)] line-through' : 'text-[var(--text-pri)]'}>
+                  <div style={{
+                    width: '24px', height: '24px', borderRadius: '50%', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '11px', border: '1.5px solid',
+                    borderColor: i < currentStep ? 'var(--greenbd)' : i === currentStep ? 'var(--accent)' : 'var(--border2)',
+                    background: i < currentStep ? 'var(--greenbg)' : 'transparent',
+                    color: i < currentStep ? 'var(--green)' : i === currentStep ? 'var(--accent)' : 'var(--text3)',
+                  }}>
+                    {i < currentStep ? '✓' : i + 1}
+                  </div>
+                  <span style={{ textDecoration: i < currentStep ? 'none' : 'none' }}>
                     {step.label}
                   </span>
                 </motion.div>
@@ -89,7 +117,7 @@ export default function Loader() {
             </AnimatePresence>
           ))}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

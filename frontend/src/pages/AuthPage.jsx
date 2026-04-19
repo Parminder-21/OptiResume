@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
-import ThemeToggle from '../components/ThemeToggle'
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true)
-  const [email, setEmail] = useState('')
+  const [isLogin,  setIsLogin]  = useState(true)
+  const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [loading, setLoading] = useState(false)
-  
+  const [error,    setError]    = useState('')
+  const [success,  setSuccess]  = useState('')
+  const [loading,  setLoading]  = useState(false)
+
   const { login, register } = useAuth()
 
   const handleSubmit = async (e) => {
@@ -23,7 +22,7 @@ export default function AuthPage() {
         await login(email, password)
       } else {
         await register(email, password, fullName)
-        setSuccess('Account created successfully! Please sign in with your credentials.')
+        setSuccess('Account created! Please sign in.')
         setIsLogin(true)
         setPassword('')
       }
@@ -35,129 +34,133 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-page)] relative overflow-hidden px-4">
-      {/* Theme Toggle */}
-      <div className="absolute top-6 right-6 z-50">
-        <ThemeToggle />
+    <div style={{
+      minHeight: '100vh', background: 'var(--bg)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '2rem', flexDirection: 'column',
+    }}>
+      {/* Logo */}
+      <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="or-logo-mark">OR</div>
+        <span className="or-logo-text">Opti<span>Resume</span></span>
       </div>
 
-      {/* Background blobs */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-card w-full max-w-md p-8 relative z-10"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="auth-card"
       >
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-purple-500 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">
-            ⚡
-          </div>
-          <h1 className="text-2xl font-bold text-[var(--text-pri)] tracking-tight">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: '22px', fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: '6px' }}>
+            {isLogin ? 'Welcome back' : 'Create account'}
           </h1>
-          <p className="text-[var(--text-sec)] text-sm mt-2">
+          <p style={{ fontSize: '14px', color: 'var(--text2)' }}>
             {isLogin ? 'Sign in to optimize your resume' : 'Start your journey to a better career'}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {!isLogin && (
             <div>
-              <label className="block text-xs font-semibold text-[var(--text-sec)] uppercase tracking-wider mb-1.5 ml-1">
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text2)', marginBottom: '6px' }}>
                 Full Name
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="input-premium" 
+                onChange={e => setFullName(e.target.value)}
+                className="or-input"
                 placeholder="John Doe"
                 required={!isLogin}
               />
             </div>
           )}
-          
+
           <div>
-            <label className="block text-xs font-semibold text-[var(--text-sec)] uppercase tracking-wider mb-1.5 ml-1">
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text2)', marginBottom: '6px' }}>
               Email Address
             </label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-premium" 
+              onChange={e => setEmail(e.target.value)}
+              className="or-input"
               placeholder="john@example.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[var(--text-sec)] uppercase tracking-wider mb-1.5 ml-1">
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text2)', marginBottom: '6px' }}>
               Password
             </label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-premium" 
+              onChange={e => setPassword(e.target.value)}
+              className="or-input"
               placeholder="••••••••"
               required
             />
           </div>
 
           {error && (
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-xs mt-2 text-center font-medium"
-            >
-              {error}
-            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              style={{
+                padding: '10px 14px', borderRadius: '9px',
+                background: 'var(--redbg)', border: '1px solid var(--redbd)',
+                color: 'var(--red)', fontSize: '13px', textAlign: 'center',
+              }}
+            >{error}</motion.p>
           )}
 
           {success && (
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs mt-2 text-center font-medium"
-            >
-              {success}
-            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              style={{
+                padding: '10px 14px', borderRadius: '9px',
+                background: 'var(--greenbg)', border: '1px solid var(--greenbd)',
+                color: 'var(--green)', fontSize: '13px', textAlign: 'center',
+              }}
+            >{success}</motion.p>
           )}
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
+            type="submit"
+            className="optimize-btn"
             disabled={loading}
-            className="btn-premium w-full py-3 mt-6 text-base font-semibold"
+            style={{ marginTop: '6px' }}
           >
             {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                Processing...
-              </div>
-            ) : isLogin ? 'Sign In' : 'Sign Up'}
-          </motion.button>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{
+                  width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)',
+                  borderTopColor: '#fff', borderRadius: '50%', animation: 'or-spin 0.8s linear infinite', display: 'inline-block',
+                }} />
+                Processing…
+              </span>
+            ) : isLogin ? 'Sign In' : 'Create Account'}
+          </button>
         </form>
 
-        <div className="mt-8 text-center pt-6 border-t border-[var(--border-pri)]">
-          <p className="text-[var(--text-sec)] text-sm">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}
-            <button 
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError('');
-                setSuccess('');
-              }}
-              className="ml-1.5 text-brand-400 font-semibold hover:text-brand-300 transition-colors"
+        <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text2)' }}>
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}
+            {' '}
+            <button
+              onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess('') }}
+              style={{ color: 'var(--accent)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}
             >
               {isLogin ? 'Sign Up' : 'Sign In'}
             </button>
           </p>
         </div>
       </motion.div>
+
+      <p style={{ marginTop: '20px', fontSize: '12px', color: 'var(--text3)' }}>
+        OptiResume AI · Built for the hackathon
+      </p>
     </div>
   )
 }

@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Home   from './pages/home.jsx'
-import Result from './pages/Result.jsx'
-import Loader from './components/Loader.jsx'
+import Home    from './pages/home.jsx'
+import Result  from './pages/Result.jsx'
+import Loader  from './components/Loader.jsx'
 import AuthPage from './pages/AuthPage.jsx'
 import { optimizeResume } from './services/api.js'
 import { useAuth } from './context/AuthContext.jsx'
-import { ThemeProvider } from './context/ThemeContext.jsx'
-import CustomCursor from './components/CustomCursor.jsx'
+
+const fade = {
+  initial: { opacity: 0 },
+  enter:   { opacity: 1, transition: { duration: 0.3 } },
+  exit:    { opacity: 0, transition: { duration: 0.2 } },
+}
 
 export default function App() {
   const { user } = useAuth()
@@ -22,7 +26,6 @@ export default function App() {
     setJobDesc(jd)
     setError(null)
     setStep('loading')
-
     try {
       const data = await optimizeResume(text, jd)
       setResults(data)
@@ -45,46 +48,30 @@ export default function App() {
   if (!user) {
     return (
       <AnimatePresence mode="wait">
-        <motion.div
-           key="auth"
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 1 }}
-           exit={{ opacity: 0 }}
-        >
+        <motion.div key="auth" variants={fade} initial="initial" animate="enter" exit="exit">
           <AuthPage />
         </motion.div>
       </AnimatePresence>
     )
   }
 
-  const pageVariants = {
-    initial: { opacity: 0, scale: 0.98 },
-    enter: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut" } },
-    exit: { opacity: 0, scale: 1.02, transition: { duration: 0.4, ease: "easeIn" } }
-  };
-
   return (
-    <div className="min-h-screen bg-[var(--bg-page)]">
-      <CustomCursor />
-      <AnimatePresence mode="wait" initial={false}>
-        {step === 'upload' && (
-          <motion.div key="home" variants={pageVariants} initial="initial" animate="enter" exit="exit">
-            <Home onOptimize={handleOptimize} error={error} />
-          </motion.div>
-        )}
-        
-        {step === 'loading' && (
-          <motion.div key="loading" variants={pageVariants} initial="initial" animate="enter" exit="exit">
-            <Loader />
-          </motion.div>
-        )}
-        
-        {step === 'results' && (
-          <motion.div key="results" variants={pageVariants} initial="initial" animate="enter" exit="exit">
-            <Result results={results} onReset={handleReset} resumeText={resumeText} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <AnimatePresence mode="wait" initial={false}>
+      {step === 'upload' && (
+        <motion.div key="home" variants={fade} initial="initial" animate="enter" exit="exit">
+          <Home onOptimize={handleOptimize} error={error} />
+        </motion.div>
+      )}
+      {step === 'loading' && (
+        <motion.div key="loading" variants={fade} initial="initial" animate="enter" exit="exit">
+          <Loader />
+        </motion.div>
+      )}
+      {step === 'results' && (
+        <motion.div key="results" variants={fade} initial="initial" animate="enter" exit="exit">
+          <Result results={results} onReset={handleReset} resumeText={resumeText} />
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
