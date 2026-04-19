@@ -20,6 +20,7 @@ class ChatQuestionsRequest(BaseModel):
 class ChatQuestion(BaseModel):
     id: str
     question: str
+    options: Optional[list[str]] = []
     hint: Optional[str] = ""
 
 

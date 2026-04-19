@@ -1,211 +1,356 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 /**
- * ChatStep — shows between upload and optimization
- * Displays AI-generated questions, collects answers, then triggers optimize.
- *
- * Props:
- *  questions:  [{id, question, hint}]
- *  loading:    bool  (true while questions are loading)
- *  onContinue: (userContext: string) => void
- *  onSkip:     () => void
+ * ChatStep — Claude-style conversational Q&A
+ * One question at a time. Each question has clickable option chips + optional free text.
  */
 export default function ChatStep({ questions = [], loading = false, onContinue, onSkip }) {
-  const [answers, setAnswers] = useState({})
+  const [currentIdx,    setCurrentIdx]    = useState(0)
+  const [answers,       setAnswers]       = useState({}) // { qId: { selected: [], custom: '' } }
+  const [customText,    setCustomText]    = useState('')
+  const [showCustom,    setShowCustom]    = useState(false)
+  const [chatHistory,   setChatHistory]   = useState([]) // Past Q&A shown above
+  const inputRef = useRef(null)
 
-  const handleChange = (id, value) => {
-    setAnswers(prev => ({ ...prev, [id]: value }))
+  const current = questions[currentIdx]
+  const isLast  = currentIdx === questions.length - 1
+
+  // Auto-focus textarea when showCustom appears
+  useEffect(() => {
+    if (showCustom && inputRef.current) inputRef.current.focus()
+  }, [showCustom, currentIdx])
+
+  const currentAnswer = answers[current?.id] || { selected: [], custom: '' }
+  const hasAnswer = currentAnswer.selected.length > 0 || currentAnswer.custom.trim()
+
+  // Toggle option chip
+  const toggleOption = (option) => {
+    const prev = answers[current.id]?.selected || []
+    const next  = prev.includes(option)
+      ? prev.filter(o => o !== option)
+      : [...prev, option]
+    setAnswers(a => ({ ...a, [current.id]: { ...currentAnswer, selected: next } }))
   }
 
-  // Bundle all answers into a readable string for the AI context
+  // Save custom text continuously
+  const handleCustomChange = (val) => {
+    setCustomText(val)
+    setAnswers(a => ({ ...a, [current.id]: { ...(answers[current.id] || { selected: [] }), custom: val } }))
+  }
+
+  // Move to next question or finish
+  const handleNext = () => {
+    const ans = answers[current.id] || { selected: [], custom: '' }
+    const summary = [
+      ...ans.selected,
+      ...(ans.custom.trim() ? [ans.custom.trim()] : []),
+    ].join('; ')
+
+    // Add to history
+    setChatHistory(h => [
+      ...h,
+      { question: current.question, answer: summary || '—' },
+    ])
+
+    setCustomText('')
+    setShowCustom(false)
+
+    if (isLast) {
+      onContinue(buildContext())
+    } else {
+      setCurrentIdx(i => i + 1)
+    }
+  }
+
+  // Skip current question
+  const handleSkipThis = () => {
+    setChatHistory(h => [
+      ...h,
+      { question: current.question, answer: '(skipped)' },
+    ])
+    setCustomText('')
+    setShowCustom(false)
+    if (isLast) {
+      onContinue(buildContext())
+    } else {
+      setCurrentIdx(i => i + 1)
+    }
+  }
+
+  // Bundle all answers
   const buildContext = () => {
-    if (!questions.length) return ''
-    return questions
-      .map(q => {
-        const answer = answers[q.id]?.trim()
-        if (!answer) return null
-        return `Q: ${q.question}\nA: ${answer}`
-      })
-      .filter(Boolean)
-      .join('\n\n')
+    const parts = questions.map(q => {
+      const ans = answers[q.id]
+      if (!ans) return null
+      const parts = [...(ans.selected || []), ...(ans.custom?.trim() ? [ans.custom.trim()] : [])]
+      if (!parts.length) return null
+      return `Q: ${q.question}\nA: ${parts.join('; ')}`
+    }).filter(Boolean)
+    return parts.join('\n\n')
   }
 
-  const answeredCount = questions.filter(q => answers[q.id]?.trim()).length
+  const progress = questions.length
+    ? Math.round((currentIdx / questions.length) * 100)
+    : 0
 
   return (
     <div style={{
       minHeight: '100vh', background: 'var(--bg)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', padding: '2rem',
+      display: 'flex', flexDirection: 'column',
     }}>
-      {/* Nav */}
-      <nav className="or-nav" style={{ position: 'fixed', top: 0, left: 0, right: 0 }}>
+      {/* ── Nav ── */}
+      <nav className="or-nav">
         <div className="or-nav-inner">
           <div className="or-logo">
             <div className="or-logo-mark">OR</div>
             <span className="or-logo-text">Opti<span>Resume</span></span>
           </div>
-          <button className="btn-outline" onClick={onSkip} style={{ fontSize: '13px' }}>
-            Skip → Optimize now
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Progress dots */}
+            {!loading && questions.length > 0 && (
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                {questions.map((_, i) => (
+                  <div key={i} style={{
+                    width: i < currentIdx ? '20px' : '8px',
+                    height: '8px', borderRadius: '100px',
+                    background: i < currentIdx
+                      ? 'var(--green)'
+                      : i === currentIdx
+                        ? 'var(--accent)'
+                        : 'var(--border2)',
+                    transition: 'all 0.3s ease',
+                  }} />
+                ))}
+              </div>
+            )}
+            <button className="btn-outline" onClick={onSkip} style={{ fontSize: '12px' }}>
+              Skip all →
+            </button>
+          </div>
         </div>
       </nav>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{
-          width: '100%', maxWidth: '620px',
-          background: 'var(--bg2)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-xl)', overflow: 'hidden',
-          boxShadow: 'var(--shadow-lg)', marginTop: '70px',
-        }}
-      >
-        {/* Header */}
-        <div style={{
-          padding: '28px 32px 22px',
-          borderBottom: '1px solid var(--border)',
-          background: 'linear-gradient(135deg, var(--accentbg) 0%, var(--bg2) 100%)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+      {/* ── Chat area ── */}
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        maxWidth: '680px', width: '100%', margin: '0 auto',
+        padding: '24px 1.5rem 120px',
+      }}>
+
+        {/* Loading state */}
+        {loading && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '32px' }}>
             <div style={{
-              width: '40px', height: '40px', borderRadius: '10px',
-              background: 'var(--accentbg2)', border: '1px solid var(--accentbg2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
+              width: '36px', height: '36px', borderRadius: '50%',
+              background: 'var(--accentbg)', border: '2px solid var(--accentbg2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0,
             }}>💬</div>
-            <div>
-              <h2 style={{ fontFamily: 'Sora,sans-serif', fontSize: '18px', fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em' }}>
-                Quick Context Check
-              </h2>
-              <p style={{ fontSize: '13px', color: 'var(--text2)', marginTop: '2px' }}>
-                Help us optimize smarter — answer what you can, skip what you can't
+            <div style={{
+              background: 'var(--bg2)', border: '1px solid var(--border)',
+              borderRadius: '0 16px 16px 16px', padding: '14px 18px',
+            }}>
+              <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{
+                    width: '7px', height: '7px', borderRadius: '50%',
+                    background: 'var(--text3)',
+                    animation: `or-pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+                  }} />
+                ))}
+              </div>
+              <p style={{ fontSize: '13px', color: 'var(--text3)', marginTop: '6px' }}>
+                Analyzing your resume for smart questions…
               </p>
             </div>
           </div>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            background: 'var(--accentbg)', border: '1px solid var(--accentbg2)',
-            color: 'var(--accent)', borderRadius: '100px',
-            padding: '4px 12px', fontSize: '12px', fontWeight: 600,
-          }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
-            AI analyzed your resume vs job description
-          </div>
-        </div>
+        )}
 
-        {/* Questions */}
-        <div style={{ padding: '24px 32px' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '32px 0' }}>
-              <div style={{ width: '48px', height: '48px', margin: '0 auto 16px', position: 'relative' }}>
-                <div className="loading-ring" style={{ width: '48px', height: '48px', position: 'absolute', inset: 0 }} />
+        {/* Chat history (past Q&As) */}
+        {!loading && chatHistory.map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{ marginBottom: '20px' }}
+          >
+            {/* AI question */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
+              <div style={{
+                width: '32px', height: '32px', borderRadius: '50%',
+                background: 'var(--bg3)', border: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '14px', flexShrink: 0,
+              }}>🤖</div>
+              <div style={{
+                background: 'var(--bg2)', border: '1px solid var(--border)',
+                borderRadius: '0 14px 14px 14px', padding: '10px 16px',
+                fontSize: '14px', color: 'var(--text2)', lineHeight: 1.5,
+              }}>
+                {item.question}
               </div>
-              <p style={{ fontSize: '14px', color: 'var(--text2)' }}>Analyzing your resume for questions…</p>
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-              <AnimatePresence>
-                {questions.map((q, i) => (
-                  <motion.div
-                    key={q.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                  >
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      {/* Number bubble */}
-                      <div style={{
-                        width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0,
-                        background: answers[q.id]?.trim() ? 'var(--green)' : 'var(--accentbg)',
-                        border: `1.5px solid ${answers[q.id]?.trim() ? 'var(--greenbd)' : 'var(--accentbg2)'}`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '11px', fontWeight: 700,
-                        color: answers[q.id]?.trim() ? '#fff' : 'var(--accent)',
-                        transition: 'all 0.2s', marginTop: '4px',
-                      }}>
-                        {answers[q.id]?.trim() ? '✓' : i + 1}
-                      </div>
 
-                      <div style={{ flex: 1 }}>
-                        <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: '8px', lineHeight: 1.4 }}>
-                          {q.question}
-                        </label>
+            {/* User answer bubble */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{
+                background: item.answer === '(skipped)'
+                  ? 'var(--bg3)'
+                  : 'var(--accent)',
+                color: item.answer === '(skipped)' ? 'var(--text3)' : '#fff',
+                borderRadius: '14px 0 14px 14px', padding: '10px 16px',
+                fontSize: '13px', fontStyle: item.answer === '(skipped)' ? 'italic' : 'normal',
+                maxWidth: '80%', lineHeight: 1.5,
+              }}>
+                {item.answer}
+              </div>
+            </div>
+          </motion.div>
+        ))}
+
+        {/* Current question */}
+        {!loading && current && (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIdx}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              {/* AI question bubble */}
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  background: 'var(--accentbg)', border: '2px solid var(--accentbg2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '16px', flexShrink: 0,
+                }}>💬</div>
+                <div style={{
+                  background: 'var(--bg2)', border: '1px solid var(--border)',
+                  borderRadius: '0 18px 18px 18px', padding: '16px 20px',
+                  boxShadow: 'var(--shadow-sm)', flex: 1,
+                }}>
+                  <p style={{ fontSize: '15px', color: 'var(--text)', fontWeight: 500, lineHeight: 1.5, marginBottom: '14px' }}>
+                    {current.question}
+                  </p>
+
+                  {/* Option chips */}
+                  {current.options && current.options.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: showCustom ? '12px' : '0' }}>
+                      {current.options.map(opt => {
+                        const isSelected = currentAnswer.selected.includes(opt)
+                        return (
+                          <button
+                            key={opt}
+                            onClick={() => toggleOption(opt)}
+                            style={{
+                              padding: '7px 14px', borderRadius: '100px',
+                              fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+                              border: `1.5px solid ${isSelected ? 'var(--accent)' : 'var(--border2)'}`,
+                              background: isSelected ? 'var(--accent)' : 'var(--bg)',
+                              color: isSelected ? '#fff' : 'var(--text2)',
+                              transition: 'all 0.15s',
+                              display: 'flex', alignItems: 'center', gap: '5px',
+                            }}
+                          >
+                            {isSelected && <span style={{ fontSize: '11px' }}>✓</span>}
+                            {opt}
+                          </button>
+                        )
+                      })}
+                      {/* "Add details" toggle */}
+                      <button
+                        onClick={() => setShowCustom(v => !v)}
+                        style={{
+                          padding: '7px 14px', borderRadius: '100px',
+                          fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+                          border: `1.5px dashed ${showCustom ? 'var(--accent)' : 'var(--border2)'}`,
+                          background: 'transparent',
+                          color: showCustom ? 'var(--accent)' : 'var(--text3)',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {showCustom ? '× Close' : '✎ Add details'}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Custom text input */}
+                  <AnimatePresence>
+                    {showCustom && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        style={{ overflow: 'hidden', marginTop: '10px' }}
+                      >
                         <textarea
-                          value={answers[q.id] || ''}
-                          onChange={e => handleChange(q.id, e.target.value)}
-                          placeholder={q.hint || 'Type your answer here... (or leave blank to skip)'}
+                          ref={inputRef}
                           rows={2}
+                          value={customText}
+                          onChange={e => handleCustomChange(e.target.value)}
+                          placeholder={current.hint || 'Add more context here...'}
                           style={{
                             width: '100%', padding: '10px 14px',
-                            border: `1.5px solid ${answers[q.id]?.trim() ? 'var(--greenbd)' : 'var(--border)'}`,
+                            border: '1.5px solid var(--border)',
                             borderRadius: '10px', fontSize: '13px',
                             fontFamily: "'DM Sans',sans-serif", color: 'var(--text)',
-                            background: answers[q.id]?.trim() ? 'var(--greenbg)' : '#ffffff',
-                            resize: 'none', outline: 'none', lineHeight: 1.5,
-                            transition: 'all 0.2s',
+                            background: '#ffffff', resize: 'none', outline: 'none', lineHeight: 1.5,
                           }}
-                          onFocus={e => {
-                            if (!answers[q.id]?.trim()) {
-                              e.target.style.borderColor = 'var(--accent)'
-                              e.target.style.background = 'var(--accentbg)'
-                            }
-                          }}
-                          onBlur={e => {
-                            if (!answers[q.id]?.trim()) {
-                              e.target.style.borderColor = 'var(--border)'
-                              e.target.style.background = '#ffffff'
-                            }
-                          }}
+                          onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                          onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
                         />
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
 
-        {/* Footer */}
+              {/* Action row */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingLeft: '46px' }}>
+                <button
+                  className="btn-outline"
+                  onClick={handleSkipThis}
+                  style={{ fontSize: '12px', padding: '7px 14px' }}
+                >
+                  Skip
+                </button>
+                <button
+                  className="btn-accent"
+                  onClick={handleNext}
+                  disabled={!hasAnswer}
+                  style={{ padding: '8px 20px', fontSize: '13px', borderRadius: '100px' }}
+                >
+                  {isLast
+                    ? (hasAnswer ? 'Finish & Optimize →' : 'Skip & Optimize →')
+                    : (hasAnswer ? 'Next →' : 'Skip →')}
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        )}
+      </div>
+
+      {/* ── Bottom hint bar ── */}
+      {!loading && (
         <div style={{
-          padding: '18px 32px 24px',
-          borderTop: '1px solid var(--border)',
-          background: 'var(--bg)',
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          background: 'rgba(248,246,242,0.95)', backdropFilter: 'blur(8px)',
+          borderTop: '1px solid var(--border)', padding: '14px 1.5rem',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <div style={{ fontSize: '13px', color: 'var(--text3)' }}>
-            {answeredCount > 0
-              ? <span style={{ color: 'var(--green)', fontWeight: 600 }}>✓ {answeredCount}/{questions.length} answered</span>
-              : 'All questions are optional'}
+          <div style={{ fontSize: '12px', color: 'var(--text3)' }}>
+            Question <strong style={{ color: 'var(--text)' }}>{currentIdx + 1}</strong> of {questions.length} · Answers help personalize your resume
           </div>
-
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <button
-              className="btn-outline"
-              onClick={onSkip}
-              style={{ fontSize: '13px' }}
-            >
-              Skip all
-            </button>
-            <button
-              className="btn-accent"
-              onClick={() => onContinue(buildContext())}
-              style={{ padding: '9px 22px', fontSize: '14px' }}
-            >
-              {answeredCount > 0 ? `Optimize with ${answeredCount} answer${answeredCount > 1 ? 's' : ''} →` : 'Optimize Resume →'}
-            </button>
-          </div>
+          <button
+            onClick={onSkip}
+            style={{ fontSize: '12px', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+          >
+            Skip all & optimize →
+          </button>
         </div>
-      </motion.div>
-
-      {/* Helper note */}
-      <motion.p
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-        style={{ marginTop: '18px', fontSize: '12px', color: 'var(--text3)', textAlign: 'center', maxWidth: '480px' }}
-      >
-        Your answers help the AI personalize bullet rewrites — they stay entirely in memory and are never stored.
-      </motion.p>
+      )}
     </div>
   )
 }
