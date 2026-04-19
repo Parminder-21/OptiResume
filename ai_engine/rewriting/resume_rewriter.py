@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from groq import Groq
 from app.core.config import settings
 from app.core.utils import extract_bullets
+from ai_engine.embedding.semantic_match import compute_keyword_overlap
 
 logger = logging.getLogger(__name__)
 
@@ -175,13 +176,32 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
         bullets = extract_bullets(resume_text)
         return resume_text, [{"original": b, "rewritten": b} for b in bullets]
 
+    # ── Domain Compatibility Gate ──────────────────────────────────────────
+    # Compute keyword overlap between resume and JD BEFORE calling Groq.
+    # If the resume is from a completely different domain, skip rewriting.
+    overlap_score = compute_keyword_overlap(resume_text, job_description)
+    logger.info(f"[DOMAIN CHECK] Keyword overlap score: {overlap_score:.1f}%")
+
+    OVERLAP_THRESHOLD = 15.0  # Below 15% = different domain, skip rewriting
+    if overlap_score < OVERLAP_THRESHOLD:
+        logger.warning(
+            f"[DOMAIN CHECK] ⚠️ Resume-JD overlap is only {overlap_score:.1f}% "
+            f"(threshold: {OVERLAP_THRESHOLD}%). "
+            "Domains appear mismatched — skipping AI rewriting to avoid fabrication."
+        )
+        bullets = extract_bullets(resume_text)
+        if not bullets and len(resume_text) > 100:
+            bullets = [p.strip() for p in resume_text.split('\n\n') if 30 < len(p.strip()) < 500][:12]
+        # Return original text unchanged, diff shows everything as "unchanged"
+        return resume_text, [{"original": b, "rewritten": b} for b in bullets]
+
     # Extract bullets from resume
     bullets = extract_bullets(resume_text)
     
-    # NEW: If extract_bullets still fails, treat paragraphs as bullets so AI always runs
+    # If extract_bullets fails, treat paragraphs as bullets
     if not bullets and len(resume_text) > 100:
         logger.warning("⚠️ No formatted bullets found. Splitting by double-newlines as fallback.")
-        bullets = [p.strip() for p in resume_text.split('\n\n') if 30 < len(p.strip()) < 500][:15]
+        bullets = [p.strip() for p in resume_text.split('\n\n') if 30 < len(p.strip()) < 500][:12]
     
     logger.info(f"[EXTRACT] Found {len(bullets)} bullets for optimization")
 
