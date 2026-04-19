@@ -323,13 +323,16 @@ export default function Result({ results, onReset, onEdit, resumeText }) {
             width: '46px', height: '46px', borderRadius: '12px',
             background: '#D1FAE5', border: '1px solid #86EFAC',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0,
-          }}>🎯</div>
+          </div>
           <div>
             <h3 style={{ fontFamily: 'Sora,sans-serif', fontSize: '17px', fontWeight: 700,
-              color: improvement > 0 ? 'var(--green)' : 'var(--amber)', letterSpacing: '-0.02em' }}>
+              color: improvement > 0 ? 'var(--green)' : improvement < 0 ? 'var(--red)' : 'var(--amber)',
+              letterSpacing: '-0.02em' }}>
               {improvement > 0
                 ? `ATS Score improved by +${improvement} points`
-                : 'Resume analyzed — no rewriting applied'}
+                : improvement < 0
+                  ? `Score changed by ${improvement} points — review bullets`
+                  : 'Resume analyzed — no rewriting applied'}
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--text2)', marginTop: '2px' }}>
               {changedCount} bullet{changedCount !== 1 ? 's' : ''} rewritten ·{' '}
