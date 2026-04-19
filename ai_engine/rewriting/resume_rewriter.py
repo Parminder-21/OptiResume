@@ -193,21 +193,23 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
     system_prompt = load_rewrite_prompt()
 
     # Build user message — send bullets as a numbered list for clarity
-    bullets_text = "\n".join(f"{i+1}. {b}" for i, b in enumerate(bullets[:20]))
+    MAX_BULLETS = 12  # Cap at 12 to avoid over-optimization
+    bullets_text = "\n".join(f"{i+1}. {b}" for i, b in enumerate(bullets[:MAX_BULLETS]))
     
     keywords_str = ""
     if target_keywords:
-        keywords_str = f"\nTARGET KEYWORDS TO INCORPORATE:\n{', '.join(target_keywords)}\n"
+        keywords_str = f"\nKey JD keywords (incorporate selectively where natural):\n{', '.join(target_keywords[:15])}\n"
 
     user_message = (
-        f"Job Description:\n{job_description[:3000]}\n"
+        f"Job Description:\n{job_description[:2500]}\n"
         f"{keywords_str}"
-        f"\nResume Bullets to Optimize ({min(len(bullets), 20)} bullets):\n"
+        f"\nResume Bullets ({min(len(bullets), MAX_BULLETS)} total):\n"
         f"{bullets_text}\n\n"
-        "Rewrite every bullet to incorporate relevant keywords from the job description. "
-        "Always improve — do NOT leave bullets unchanged unless truly impossible.\n"
+        "Review each bullet carefully. ONLY rewrite bullets that are vague, weak, or missing key JD terms. "
+        "Strong bullets that already have action verbs and keywords should be returned UNCHANGED. "
+        "Aim to leave at least 40% of bullets exactly as-is.\n"
         "Return ONLY a valid JSON array with no markdown fences:\n"
-        '[{"original": "exact original text", "rewritten": "improved text"}, ...]'
+        '[{"original": "exact original text", "rewritten": "improved or unchanged text"}, ...]'
     )
 
     try:
@@ -219,7 +221,7 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
                 {"role": "system", "content": system_prompt},
                 {"role": "user",   "content": user_message}
             ],
-            temperature=0.4  # Lower temperature = more consistent, keyword-accurate output
+            temperature=0.25  # Low temperature = conservative, minimal hallucination
         )
 
         response_text = response.choices[0].message.content
@@ -239,7 +241,7 @@ def rewrite_resume(resume_text: str, job_description: str, model, target_keyword
     diff_list = []
     replacements_made = 0
 
-    for i, original_bullet in enumerate(bullets[:20]):
+    for i, original_bullet in enumerate(bullets[:MAX_BULLETS]):
         # Get corresponding rewritten item
         if i < len(rewritten):
             item = rewritten[i]
