@@ -1,10 +1,12 @@
 import axios from 'axios'
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1'
+// Root URL for endpoints mounted outside /api/v1 (e.g. /health)
+const ROOT_URL = BASE_URL.replace(/\/api\/v1$/, '') || ''
 
 export const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 60000, 
+  timeout: 60000,
 })
 
 // ─── Upload ───────────────────────────────────────────────────────────────────
@@ -42,6 +44,10 @@ export const getChatQuestions = async (resumeText, jobDescription) => {
 
 // ─── Optimize ─────────────────────────────────────────────────────────────────
 
+// Simple per-tab rate limiter — prevents burning API credits on accidental double-clicks.
+let _lastOptimizeAt = 0
+const OPTIMIZE_COOLDOWN_MS = 30_000 // 30 seconds
+
 /**
  * Run the full optimization pipeline.
  * @param {string} resumeText      - Extracted or pasted resume text
@@ -50,6 +56,13 @@ export const getChatQuestions = async (resumeText, jobDescription) => {
  * @returns {Promise<OptimizeResponse>}
  */
 export const optimizeResume = async (resumeText, jobDescription, userContext = null) => {
+  const now = Date.now()
+  if (now - _lastOptimizeAt < OPTIMIZE_COOLDOWN_MS) {
+    const wait = Math.ceil((OPTIMIZE_COOLDOWN_MS - (now - _lastOptimizeAt)) / 1000)
+    throw new Error(`Please wait ${wait}s before optimizing again.`)
+  }
+  _lastOptimizeAt = now
+
   const res = await api.post('/optimize', {
     resume_text:     resumeText,
     job_description: jobDescription,
@@ -89,7 +102,8 @@ export const downloadPDF = async (optimizedResume, candidateName = 'Candidate') 
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 
+// Health is mounted at /health on the backend, NOT under /api/v1
 export const checkHealth = async () => {
-  const res = await api.get('/health')
+  const res = await axios.get(`${ROOT_URL}/health`)
   return res.data
 }

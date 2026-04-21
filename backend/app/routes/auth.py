@@ -63,9 +63,10 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
         )
-    
-    # Create token
-    access_token_expires = timedelta(minutes=1440)
+
+    # Create token using the configured expiry from settings
+    from app.core.config import settings as _s
+    access_token_expires = timedelta(minutes=_s.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         subject=user.id, expires_delta=access_token_expires
     )

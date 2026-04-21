@@ -95,6 +95,6 @@ app.include_router(chat.router,     prefix="/api/v1", tags=["Chat"])
 def health_check():
     return {
         "status": "ok",
-        "model_loaded": hasattr(app.state, "sbert_model"),
+        "model_loaded": getattr(app.state, "sbert_model", None) is not None,
         "version": "1.0.0"
     }
